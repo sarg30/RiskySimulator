@@ -3,11 +3,12 @@ each = []
 
 def decodeinstruct(line):
     linelist = [x.strip() for x in line.split(',')]
-    linelist = [x.strip() for x in line.split(' ')]
     res = []
-    for ele in linelist:
-        if ele.strip():
-            res.append(ele)
+    for i in linelist:
+       i = [x.strip() for x in i.split(' ')]
+       for k in i :
+           if len(k)>0:
+               res. append(k)
     each.append(res)
 
 lines = []
@@ -41,5 +42,5 @@ for i in lines:
     decodeinstruct(i)
 
 for i in each:
-  print(i)
+    print(i)
 
