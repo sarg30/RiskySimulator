@@ -1,0 +1,56 @@
+<FileChoosePopup>:
+    title: "Choose a .CSV File"
+    size_hint: .9, .9
+    auto_dismiss: False
+
+    BoxLayout:
+        orientation: "vertical"
+        FileChooser:
+            id: filechooser
+            FileChooserIconLayout
+
+        BoxLayout:
+            size_hint: (1, 0.1)
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            spacing: 20
+            Button:
+                text: "Cancel"
+                on_release: root.dismiss()
+            Button:
+                text: "Load"
+                on_release: root.load(filechooser.selection)
+                id: ldbtn
+                disabled: True if filechooser.selection==[] else False
+
+<Tab>:
+    do_default_tab: False
+    TabbedPanelItem:
+        text: 'first tab'
+        Label:
+            text: 'First tab content area'
+    TabbedPanelItem:
+        text: 'Import'
+        background_color: (1, .5, 0, 1)
+        background_normal: ''
+        StackLayout:
+            orientation: 'lr-tb'
+            size_hint_y: None
+            height: 30
+            spacing: 5
+            Label:
+                text: ''
+                size_hint_x: 1
+            Label:
+                text: ''
+                size_hint_x: 0.2
+            Button:
+                text: 'Choose File'
+                size_hint_x: 0.2
+                on_press: root.open_popup()
+            TextInput:
+                id: get_file
+                readonly: True
+                size_hint_x: 0.4
+            Label:
+                text: ''
+                size_hint_x: 0.2
