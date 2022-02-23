@@ -1,5 +1,5 @@
-
-Instructions=[]     #change it to instructions = userinstruct(file)
+from userinstruct import takeinput
+Instructions= takeinput('grouping.txt') #change it to instructions = userinstruct(file)
 RegisterVals=[]
 
 #initializing the values of  all registers as 0
@@ -12,7 +12,7 @@ def process_R_type(line):
     the memory addresses of 
     the registers for R-type instructions
     """
-    return line[1],line[2],line[3]
+    return line[0],line[1],line[2]
 
 
 def add(line):
@@ -77,6 +77,10 @@ Registers= {
 }
 
 #this is the way the register values can be accessed and modified
-# s="t0"
-# RegisterVals[Registers[s]]=2
-# print(RegisterVals[Registers[s]])
+for i in Instructions:
+    if len(i)>2:
+        #print(i)
+        print(process_R_type(i))
+s="t0"
+RegisterVals[Registers[s]]=2
+print(RegisterVals[Registers[s]])

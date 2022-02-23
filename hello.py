@@ -1,3 +1,4 @@
+from userinstruct import takeinput
 from kivy.app import App
 from kivy.uix.popup import Popup
 from kivy.uix.tabbedpanel import TabbedPanel
@@ -5,8 +6,9 @@ from kivy.properties import ObjectProperty, StringProperty
 from kivy.lang import Builder
 import os
 from kivy.core.window import Window
-Window.size = (900, 900)
 
+Window.size = (1000, 600)
+arr = []
 class FileChoosePopup(Popup):
     load = ObjectProperty()
 
@@ -29,8 +31,14 @@ class Tab(TabbedPanel):
 
         # check for non-empty list i.e. file selected
         if self.file_path:
-            with open(os.path.join(self.file_path)) as f:
-                print (f.read())
+            arr = takeinput(self.file_path)
+            #print(arr)
+            ele =""
+            for i in arr:
+                for j in i:
+                    ele = ele+j+" "
+                ele = ele +"\n"
+            self.ids.newstuff.text = ele
             self.ids.get_file.text = self.file_path
 
 

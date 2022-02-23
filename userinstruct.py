@@ -1,5 +1,6 @@
 
 each = []
+lines = []
 
 def decodeinstruct(line):
     linelist = [x.strip() for x in line.split(',')]
@@ -11,7 +12,6 @@ def decodeinstruct(line):
                res. append(k)
     each.append(res)
 
-lines = []
 def takeinput(files):
 
     file = open(files,'r')
@@ -32,15 +32,15 @@ def takeinput(files):
             if len(seperate)!=0:
                 seperate  = seperate.strip()
                 lines.append(seperate)
-
+    for i in lines:
+        decodeinstruct(i)
+    return each
+    
     #for i in lines:
         #print(i)
 
-takeinput('grouping.txt')
+#takeinput('grouping.txt')
 
-for i in lines:
-    decodeinstruct(i)
-
-for i in each:
-    print(i)
+# for i in each:
+#     print(i)
 
