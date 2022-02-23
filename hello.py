@@ -1,33 +1,47 @@
-from re import L
-import kivy
 from kivy.app import App
-from kivy.uix.label import Label
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
+from kivy.uix.popup import Popup
+from kivy.uix.tabbedpanel import TabbedPanel
+from kivy.properties import ObjectProperty, StringProperty
+from kivy.lang import Builder
+import os
+from kivy.core.window import Window
+Window.size = (900, 900)
 
-def myfunc(stuff):
-    for i in range (len(stuff)):
-        print(stuff[i])
+class FileChoosePopup(Popup):
+    load = ObjectProperty()
 
 
-#myfunc("fuckoff")
-class MyGridLayout(GridLayout):
-    def __init__(self, **kwargs):
-        super(MyGridLayout,self).__init__(**kwargs)
+class Tab(TabbedPanel):
+    file_path = StringProperty("No file chosen")
+    the_popup = ObjectProperty(None)
+
+    def open_popup(self):
+        self.the_popup = FileChoosePopup(load=self.load)
+        self.the_popup.open()
+
+
         
-        self.cols =2
-        self.add_widget(Label(text="name"))
-        self.name = TextInput(multiline = False)
-        self.add_widget(self.name)
 
-        self.add_widget(Label(text="pizza"))
-        self.pizza = TextInput(multiline = False)
-        self.add_widget(self.pizza)
+    def load(self, selection):
+        self.file_path = str(selection[0])
+        self.the_popup.dismiss()
+        print(self.file_path)
 
-class MyApp(App):
+        # check for non-empty list i.e. file selected
+        if self.file_path:
+            with open(os.path.join(self.file_path)) as f:
+                print (f.read())
+            self.ids.get_file.text = self.file_path
+
+
+Builder.load_file('main.kv')
+
+
+class TestApp(App):
+
     def build(self):
-        return MyGridLayout()
+        return Tab()
 
-if __name__ == '__main__':
-    MyApp().run()
+
+if __name__ == "__main__":
+    TestApp().run()
