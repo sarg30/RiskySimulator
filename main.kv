@@ -1,15 +1,15 @@
 <FileChoosePopup>:
-    title: "Choose a .CSV File"
+    title: "Choose a .TXT File or .ASM File"
     size_hint: .9, .9
     auto_dismiss: False
 
-    BoxLayout:
+    MDBoxLayout:
         orientation: "vertical"
         FileChooser:
             id: filechooser
             FileChooserIconLayout
 
-        BoxLayout:
+        MDBoxLayout:
             size_hint: (1, 0.1)
             pos_hint: {'center_x': .5, 'center_y': .5}
             spacing: 20
@@ -26,25 +26,38 @@
     do_default_tab: False
     TabbedPanelItem:
         text: 'first tab'
-        Label:
-            text: 'First tab content area'
-        TextInput:
+        background_color: (0,0,0,0)
+        background_normal: ''
+        canvas.before:
+            Color:
+                rgba: (48/255,84/255,150/255,1)
+            RoundedRectangle:
+                size: self.size
+                pos: self.pos
+                radius: [15]
+        MDLabel:
+            markup:True
+            text: '[b]bold[/b]First tab content area'
+        MDLabel:
             id: newstuff
-            readonly: False
+            markup:True
             size_hint_x: 0.4
+            text:"[b]bold[/b]"
+       
+
     TabbedPanelItem:
         text: 'Import'
         background_color: (1, .5, 0, 1)
         background_normal: ''
-        StackLayout:
+        MDStackLayout:
             orientation: 'lr-tb'
             size_hint_y: None
             height: 30
             spacing: 5
-            Label:
+            MDLabel:
                 text: ''
                 size_hint_x: 1
-            Label:
+            MDLabel:
                 text: ''
                 size_hint_x: 0.2
             Button:
@@ -55,6 +68,6 @@
                 id: get_file
                 readonly: True
                 size_hint_x: 0.4
-            Label:
+            MDLabel:
                 text: ''
                 size_hint_x: 0.2

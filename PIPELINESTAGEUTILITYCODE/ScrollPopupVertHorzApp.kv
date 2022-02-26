@@ -1,0 +1,56 @@
+<ScrollPopup>:
+    orientation: "vertical"
+    popupButton: popup_button
+
+    BoxLayout:
+        size_hint_y: None
+        Button:
+            id: popup_button
+            text: "Open scrollable popup"
+            size_hint_y: None
+            height: "40dp"
+            on_press: root.openPopup()
+
+<ScrollablePopup>:
+    id: scr_popup
+    auto_dismiss: False
+    contentBox: content_box
+    scrollView: scroll_view
+    padding:10, 10
+
+    BoxLayout:
+        id: content_box
+        orientation: "vertical"
+        content: content_text
+
+        ScrollView:
+            id: scroll_view
+            effect_cls: "ScrollEffect" # prevents overscrolling
+            do_scroll_x: True # enabling horizontal scrolling
+            Label:
+                id: content_text
+                markup:True
+                size_hint_x: 1.5 # must be greater than 1 for horizontal scrolling
+                size_hint_y: None # requnred for vertical scrolling to work
+                height: self.texture_size[1] # required for vertical scrolling to work
+                text_size: self.width, None
+                line_height: 1.5
+                valign: "top"
+
+        Button:
+            text: "Scroll to top"
+            size_hint_y: None
+            height: "40dp"
+            on_press: scr_popup.scrollToTop()
+
+        Button:
+            text: "Scroll to bottom"
+            size_hint_y: None
+            height: "40dp"
+            on_press: scr_popup.scrollToBottom()
+
+        Button:
+            text: "GeneratePipeline"
+            size_hint_y: None
+            height: "40dp"
+            on_press: scr_popup.write()

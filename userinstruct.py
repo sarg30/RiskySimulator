@@ -1,7 +1,6 @@
-
 each = []
 lines = []
-
+jumpdict = {}
 def decodeinstruct(line):
     linelist = [x.strip() for x in line.split(',')]
     res = []
@@ -11,6 +10,15 @@ def decodeinstruct(line):
            if len(k)>0:
                res. append(k)
     each.append(res)
+
+def makejumpdict(each):
+    counter =0
+    for i in each:
+        counter=counter+1
+        if i[0].find(":")!=-1:
+            s=i[0]
+            #print(s)
+            jumpdict[s]=counter
 
 def takeinput(files):
 
@@ -40,7 +48,8 @@ def takeinput(files):
         #print(i)
 
 #takeinput('grouping.txt')
-
+#makejumpdict(each)
+#print(jumpdict)
 # for i in each:
 #     print(i)
 
