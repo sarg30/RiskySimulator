@@ -12,8 +12,25 @@ for i in range(32):
     RegisterVals.append(0)
 
 def isregister(line):#for addi we should know wether they are referring to register or number
-    pass
-    
+    for i in Registers:
+        if line==i:
+            return True
+    return False
+
+def addi(line):
+    sum =0
+    rd,rs1,rs2=process_R_type(line)
+    if isregister(rs1):
+        sum =sum+RegisterVals[Registers[rs1]]
+    else:
+        sum=sum+rs1
+
+    if isregister(rs2):
+        sum =sum+RegisterVals[Registers[rs2]]
+    else:
+        sum=sum+rs1
+    RegisterVals[Registers[rd]]=RegisterVals[Registers[rs1]]+RegisterVals[Registers[rs2]]
+
 def lw(line):
     global pc
     rs1,rs2 = line[1],line[2]
@@ -121,7 +138,11 @@ Registers= {
 }
 
 #this is the way the register values can be accessed and modified
-processfunction()
+#processfunction()
+#print(Instructions)
 #s="t0"
 #RegisterVals[Registers[s]]=2
 #print(RegisterVals[Registers[s]])
+
+for i in Registers:
+    print(i,RegisterVals[Registers[i]])

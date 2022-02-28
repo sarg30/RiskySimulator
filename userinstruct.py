@@ -19,6 +19,7 @@ def makejumpdict(each):
             s=i[0]
             #print(s)
             jumpdict[s]=counter
+    return jumpdict
 
 def takeinput(files):
 
@@ -50,6 +51,6 @@ def takeinput(files):
 #takeinput('grouping.txt')
 #makejumpdict(each)
 #print(jumpdict)
-# for i in each:
-#     print(i)
+#for i in each:
+   # print(i)
 
