@@ -19,8 +19,7 @@ bge x0, t1, outerend # Jump to end if t1=0
 andi t2, 0 # Clear contents of register t2
 innerloop: # Inner FOR loop
 bge t2, t1, innerend # Jump to end of inner FOR loop if t2=t1
-lb t3, 0(t0) # Load the first number from unsorted array
-to t3
+lb t3, 0(t0) # Load the first number from unsorted array to t3
 lb t5, 1(t0) # Load the second number from unsortedarray to t5
 bgt t3, t5, swap # Swap if t3>t5
 addi t0, t0, 1 # Increment index to move through the array
