@@ -29,12 +29,18 @@ def process_I_type(line):
     """
     return line[1],line[2],line[3]
 
-def process_B_Type(line):
+def process_B_type(line):
     """
     This function is to return the registers and labels
     corresponding to the B type instructions
     """
     return line[1],line[2],line[3]
+
+def process_J_type(line):
+    """
+    returns labels related to J type instructions
+    """
+    return line[1]
 
 # for addi we should know wether they are referring to register or number
 def isregister(line): 
@@ -61,7 +67,7 @@ def lw(line):
 
 def beq(line):
     global pc
-    rs1, rs2, nextaddress = process_B_Type(line) 
+    rs1, rs2, nextaddress = process_B_type(line) 
     if rs1 == rs2:
         pc = jumpdict[nextaddress]
         # print(pc)
@@ -70,7 +76,7 @@ def beq(line):
 
 def bne(line):
     global pc
-    rs1, rs2, nextaddress = process_B_Type(line)
+    rs1, rs2, nextaddress = process_B_type(line)
     if rs1 != rs2:
         pc = jumpdict[nextaddress]
     else:
@@ -130,6 +136,13 @@ def shift_left_logical(line):
         RegisterVals[Register_index[rs2]])
     pc = pc+1
 
+
+#Functions related to jump instructions
+
+def jal(line):
+    global pc
+    nextaddress=line[1]
+    pc=jumpdict[nextaddress]
 
 #Assigning indices to each register
 Register_index = {
