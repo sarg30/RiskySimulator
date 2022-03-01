@@ -9,10 +9,8 @@ memory = numpy.empty(4096, dtype=object)
 global pc
 pc = 0
 
-# initializing the values in all registers as 0
-RegisterVals = []
-for i in range(32):
-    RegisterVals.append(0)
+
+#Functions related to processing different types of instructions and returning required registers, labels and constants
 
 def process_R_type(line):
     """
@@ -42,12 +40,6 @@ def process_J_type(line):
     """
     return line[1]
 
-# for addi we should know wether they are referring to register or number
-def isregister(line): 
-    for registers in Register_index:
-        if line == registers:
-            return True
-    return False
 
 
 #Functions related to processing load and save instructions
@@ -112,11 +104,11 @@ def addi(line):
     global pc
     sum = 0
     rd, rs1, rs2 = process_I_type(line)
-    if isregister(rs1):
+    if is_register(rs1):
         sum = sum+RegisterVals[Register_index[rs1]]
     else:
         sum = sum+int(rs1)
-    if isregister(rs2):
+    if is_register(rs2):
         sum = sum+RegisterVals[Register_index[rs2]]
     else:
         sum = sum+int(rs2)
@@ -143,6 +135,20 @@ def jal(line):
     global pc
     nextaddress=line[1]
     pc=jumpdict[nextaddress]
+
+
+# checks whether the input is a register or a constant word
+def is_register(line): 
+    for registers in Register_index:
+        if line == registers:
+            return True
+    return False
+
+# initializing the values in all registers as 0
+RegisterVals = []
+for i in range(32):
+    RegisterVals.append(0)
+
 
 #Assigning indices to each register
 Register_index = {
