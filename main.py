@@ -4,59 +4,15 @@ from userinstruct import makejumpdict, takeinput
 # change it to instructions = userinstruct(file)
 datasection,textsection,jumpdict = takeinput('grouping.txt')
 memory = numpy.empty(4096, dtype=object)
+
 # counter for instruction
 global pc
 pc = 0
-# initializing the values of  all registers as 0
+
+# initializing the values in all registers as 0
 RegisterVals = []
 for i in range(32):
     RegisterVals.append(0)
-
- # for addi we should know wether they are referring to register or number
-def isregister(line): 
-    for i in Registers:
-        if line == i:
-            return True
-    return False
-
-
-def addi(line):
-    global pc
-    sum = 0
-    rd, rs1, rs2 = process_R_type(line)
-    if isregister(rs1):
-        sum = sum+RegisterVals[Registers[rs1]]
-    else:
-        sum = sum+int(rs1)
-    if isregister(rs2):
-        sum = sum+RegisterVals[Registers[rs2]]
-    else:
-        sum = sum+int(rs2)
-    print(sum)
-    RegisterVals[Registers[rd]] = sum
-    pc = pc+1
-
-
-def lw(line):
-    global pc
-    rs1, rs2 = line[1], line[2]
-    linelist = [x.strip() for x in rs2.split('(')]
-    rs2 = linelist[0]
-    linelist = [x.strip() for x in linelist[1].split(')')]
-    temp = linelist[0]
-    rs2 = int(rs2)+RegisterVals[Registers[temp]]
-    pc = pc+1
-
-
-def beq(line):
-    global pc
-    rs1, rs2, nextaddress = process_R_type(line) 
-    if rs1 == rs2:
-        pc = jumpdict[nextaddress]
-        print(pc)
-    else:
-        pc = pc+1
-
 
 def process_R_type(line):
     """
@@ -66,6 +22,62 @@ def process_R_type(line):
     """
     return line[1], line[2], line[3]
 
+def process_I_type(line):
+    """
+    This function is to return the registers and
+    the constants given with I type instructions
+    """
+    return line[1],line[2],line[3]
+
+def process_B_Type(line):
+    """
+    This function is to return the registers and labels
+    corresponding to the B type instructions
+    """
+    return line[1],line[2],line[3]
+
+# for addi we should know wether they are referring to register or number
+def isregister(line): 
+    for registers in Register_index:
+        if line == registers:
+            return True
+    return False
+
+
+#Functions related to processing load and save instructions
+
+def lw(line):
+    global pc
+    rs1, rs2 = line[1], line[2]
+    linelist = [x.strip() for x in rs2.split('(')]
+    rs2 = linelist[0]
+    linelist = [x.strip() for x in linelist[1].split(')')]
+    temp = linelist[0]
+    rs2 = int(rs2)+RegisterVals[Register_index[temp]] #should this be rs1?
+    pc = pc+1
+
+
+#Functions related to processing branching instructions
+
+def beq(line):
+    global pc
+    rs1, rs2, nextaddress = process_B_Type(line) 
+    if rs1 == rs2:
+        pc = jumpdict[nextaddress]
+        # print(pc)
+    else:
+        pc = pc+1
+
+def bne(line):
+    global pc
+    rs1, rs2, nextaddress = process_B_Type(line)
+    if rs1 != rs2:
+        pc = jumpdict[nextaddress]
+    else:
+        pc = pc+1
+
+
+# Funtions related to processing Instructions related to arithmetic operations
 
 def add(line):
     global pc
@@ -74,8 +86,8 @@ def add(line):
     add instruction of risc-v
     """
     rd, rs1, rs2 = process_R_type(line)
-    RegisterVals[Registers[rd]] = RegisterVals[Registers[rs1]] + RegisterVals[Registers[rs2]]
-    print( RegisterVals[Registers[rd]])
+    RegisterVals[Register_index[rd]] = RegisterVals[Register_index[rs1]] + RegisterVals[Register_index[rs2]]
+    print( RegisterVals[Register_index[rd]])
     pc = pc+1
 
 
@@ -86,7 +98,24 @@ def sub(line):
     sub instruction of risc-v
     """
     rd, rs1, rs2 = process_R_type(line)
-    RegisterVals[Registers[rd]] = RegisterVals[Registers[rs1]] -  RegisterVals[Registers[rs2]]
+    RegisterVals[Register_index[rd]] = RegisterVals[Register_index[rs1]] -  RegisterVals[Register_index[rs2]]
+    pc = pc+1
+
+
+def addi(line):
+    global pc
+    sum = 0
+    rd, rs1, rs2 = process_I_type(line)
+    if isregister(rs1):
+        sum = sum+RegisterVals[Register_index[rs1]]
+    else:
+        sum = sum+int(rs1)
+    if isregister(rs2):
+        sum = sum+RegisterVals[Register_index[rs2]]
+    else:
+        sum = sum+int(rs2)
+    print(sum)
+    RegisterVals[Register_index[rd]] = sum
     pc = pc+1
 
 
@@ -97,12 +126,13 @@ def shift_left_logical(line):
     sll instruction of risc-v
     """
     rd, rs1, rs2 = process_R_type(line)
-    RegisterVals[Registers[rd]] = (RegisterVals[Registers[rs1]]) << (
-        RegisterVals[Registers[rs2]])
+    RegisterVals[Register_index[rd]] = (RegisterVals[Register_index[rs1]]) << (
+        RegisterVals[Register_index[rs2]])
     pc = pc+1
 
 
-Registers = {
+#Assigning indices to each register
+Register_index = {
     "zero": 0,
     "ra": 1,
     "sp": 2,
@@ -153,8 +183,8 @@ def processfunction():
 
 # this is the way the register values can be accessed and modified
 # s="t0"
-# RegisterVals[Registers[s]]=2
-# print(RegisterVals[Registers[s]])
+# RegisterVals[Register_index[s]]=2
+# print(RegisterVals[Register_index[s]])
 processfunction()
-# for i in Registers:
-#     print(i, RegisterVals[Registers[i]])
+# for i in Register_index:
+#     print(i, RegisterVals[Register_index[i]])
