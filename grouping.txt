@@ -38,4 +38,5 @@ innerend: # End of inner FOR loop
 la t0, Array # Load address of array
 addi t1, t1, -1 # Decrement outer index of outer FOR loop
 j outerloop # Loop through outer FOR loop
-outerend: j outerend # End of progra
+outerend: 
+j outerend # End of program

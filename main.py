@@ -1,20 +1,19 @@
-from asyncio.windows_events import NULL
-from atexit import register
+import numpy
 from userinstruct import makejumpdict, takeinput
 
 # change it to instructions = userinstruct(file)
-Instructions = takeinput('grouping.txt')
-jumpdict = makejumpdict(Instructions)  # dictionary for jump instructions
-RegisterVals = []
+datasection,textsection,jumpdict = takeinput('grouping.txt')
+memory = numpy.empty(4096, dtype=object)
 # counter for instruction
 global pc
 pc = 0
 # initializing the values of  all registers as 0
+RegisterVals = []
 for i in range(32):
     RegisterVals.append(0)
 
-
-def isregister(line):  # for addi we should know wether they are referring to register or number
+ # for addi we should know wether they are referring to register or number
+def isregister(line): 
     for i in Registers:
         if line == i:
             return True
@@ -24,13 +23,11 @@ def isregister(line):  # for addi we should know wether they are referring to re
 def addi(line):
     global pc
     sum = 0
-    print(line)
     rd, rs1, rs2 = process_R_type(line)
     if isregister(rs1):
         sum = sum+RegisterVals[Registers[rs1]]
     else:
         sum = sum+int(rs1)
-    print(sum)
     if isregister(rs2):
         sum = sum+RegisterVals[Registers[rs2]]
     else:
@@ -38,14 +35,11 @@ def addi(line):
     print(sum)
     RegisterVals[Registers[rd]] = sum
     pc = pc+1
-    print(pc)
 
 
 def lw(line):
     global pc
-    print(line)
     rs1, rs2 = line[1], line[2]
-    print(pc+1)
     linelist = [x.strip() for x in rs2.split('(')]
     rs2 = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
@@ -55,8 +49,8 @@ def lw(line):
 
 
 def beq(line):
-    rs1, rs2, nextaddress = process_R_type(line)
     global pc
+    rs1, rs2, nextaddress = process_R_type(line) 
     if rs1 == rs2:
         pc = jumpdict[nextaddress]
         print(pc)
@@ -80,10 +74,9 @@ def add(line):
     add instruction of risc-v
     """
     rd, rs1, rs2 = process_R_type(line)
-    RegisterVals[Registers[rd]] = RegisterVals[Registers[rs1]] + \
-        RegisterVals[Registers[rs2]]
+    RegisterVals[Registers[rd]] = RegisterVals[Registers[rs1]] + RegisterVals[Registers[rs2]]
+    print( RegisterVals[Registers[rd]])
     pc = pc+1
-    print(pc)
 
 
 def sub(line):
@@ -93,8 +86,7 @@ def sub(line):
     sub instruction of risc-v
     """
     rd, rs1, rs2 = process_R_type(line)
-    RegisterVals[Registers[rd]] = RegisterVals[Registers[rs1]] - \
-        RegisterVals[Registers[rs2]]
+    RegisterVals[Registers[rd]] = RegisterVals[Registers[rs1]] -  RegisterVals[Registers[rs2]]
     pc = pc+1
 
 
@@ -149,21 +141,20 @@ Registers = {
 
 def processfunction():
     global pc
-    while pc != len(Instructions):
-        line = Instructions[pc]
-        if line[0] == 'addi':
+    while pc != len(textsection):
+        line = textsection[pc]
+        if line[0] == 'add':
+            add(line)
+        elif line[0] == 'addi':
             addi(line)
-        if line[0] == 'lb':
-            lw(line)
-        pc = pc+1
+        else:
+            pc = pc+1
 
 
 # this is the way the register values can be accessed and modified
-processfunction()
-# print(Instructions)
 # s="t0"
 # RegisterVals[Registers[s]]=2
 # print(RegisterVals[Registers[s]])
-
-for i in Registers:
-    print(i, RegisterVals[Registers[i]])
+processfunction()
+# for i in Registers:
+#     print(i, RegisterVals[Registers[i]])
