@@ -54,6 +54,8 @@ def lw(line):
     rs2 = int(rs2)+RegisterVals[Register_index[temp]] #should this be rs1?
     pc = pc+1
 
+def sw(line):
+    global pc
 
 #Functions related to processing branching instructions
 
@@ -196,6 +198,14 @@ def processfunction():
             add(line)
         elif line[0] == 'addi':
             addi(line)
+        elif line[0]=='sub':
+            sub(line)
+        elif line[0]=='jal':
+            jal(line)
+        elif line[0]=='bne':
+            bne(line)
+        elif line[0]=='lw':
+            lw(line)
         else:
             pc = pc+1
 
