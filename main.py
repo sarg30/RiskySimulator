@@ -56,6 +56,7 @@ def lw(line):
     RegisterVals[Register_index[rd]]=memory[rs2]
     pc = pc+1
 
+
 def sw(line):
     global pc
     #sw rd, offset_12(base)
@@ -68,6 +69,7 @@ def sw(line):
     memory[rs2]=RegisterVals[Register_index[rd]]
     pc=pc+1
 
+
 #Functions related to processing branching instructions
 
 def beq(line):
@@ -78,6 +80,7 @@ def beq(line):
         # print(pc)
     else:
         pc = pc+1
+
 
 def bne(line):
     global pc
@@ -157,6 +160,7 @@ def is_register(line):
             return True
     return False
 
+
 # initializing the values in all registers as 0
 RegisterVals = []
 for i in range(32):
@@ -217,6 +221,8 @@ def processfunction():
             bne(line)
         elif line[0]=='lw':
             lw(line)
+        elif line[0]=='sw':
+            sw(line)
         else:
             pc = pc+1
 
