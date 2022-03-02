@@ -46,16 +46,27 @@ def process_J_type(line):
 
 def lw(line):
     global pc
-    rs1, rs2 = line[1], line[2]
+    # lw rd, offset_12(base)
+    rd, rs2 = line[1], line[2]
     linelist = [x.strip() for x in rs2.split('(')]
-    rs2 = linelist[0]
+    offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
-    temp = linelist[0]
-    rs2 = int(rs2)+RegisterVals[Register_index[temp]] #should this be rs1?
+    base = linelist[0]
+    rs2 = int(offset)+RegisterVals[Register_index[base]]
+    RegisterVals[Register_index[rd]]=memory[rs2]
     pc = pc+1
 
 def sw(line):
     global pc
+    #sw rd, offset_12(base)
+    rd,rs2=line[1],line[2]
+    linelist = [x.strip() for x in rs2.split('(')]
+    offset = linelist[0]
+    linelist = [x.strip() for x in linelist[1].split(')')]
+    base = linelist[0]
+    rs2 = int(offset)+RegisterVals[Register_index[base]]
+    memory[rs2]=RegisterVals[Register_index[rd]]
+    pc=pc+1
 
 #Functions related to processing branching instructions
 
