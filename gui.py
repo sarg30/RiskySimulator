@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import *
 from tkinter import filedialog
+from turtle import bgcolor
 from userinstruct import  takeinput
 #from main import RegisterVals
 #print(RegisterVals)
@@ -10,18 +11,23 @@ registers=[ "zero","ra","sp","gp","tp","t0","t1","t2","s0","s1","a0",
             "s6","s7","s8","s9", "s10","s11", "t3","t4","t5","t6"]
 class Table:
      
-    def __init__(self,ws):
+    def __init__(self,root):
          
         # code for creating table
-        for i in range(32):
-            for j in range(2):
+        for i in range(16):
+            for j in range(4):
                  
-                self.e = Entry(ws, width=30, fg='black',
-                               font=('Helvetica',9,'bold'))
+                self.e = Entry(root, width=10, fg='black',
+                               font=('Helvetica',12,'bold'))
                 if j == 0:
                     self.e.grid(row=i, column=j)
                     self.e.insert(END, registers[i])
                 if j == 1:
+                    self.e.grid(row=i, column=j)
+                if j == 2:
+                    self.e.grid(row=i, column=j)
+                    self.e.insert(END, registers[i+16])
+                if j == 3:
                     self.e.grid(row=i, column=j)
 def openFile():
     tf = filedialog.askopenfilename(
@@ -44,36 +50,68 @@ def openFile():
     txtarea.insert(END, ele)
 
 
-ws = tk.Tk()
+root = tk.Tk()
+root.title("Risc-simulator")
+root.geometry("1450x700")
+root['bg'] = '#001233'
 
-ws.title("Risc-simulator")
-ws.geometry("1450x750")
-ws['bg'] = '#001233'
-tabControl = ttk.Notebook(ws)
+
+tabControl = ttk.Notebook(root)
 style = ttk.Style()
 style.theme_create( "MyStyle", parent="alt", settings={
         "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0] } },
-        "TNotebook.Tab": {"configure": {"padding": [5, 5] },}})
-
+        "TNotebook.Tab": {"configure": {"padding": [5, 5] }}})
 style.theme_use("MyStyle")
-sw = ws.winfo_screenwidth()
-sh = ws.winfo_screenheight()
+sw = root.winfo_screenwidth()
+sh = root.winfo_screenheight()
 tab1 = Frame(tabControl,width=sw,height=sh,bg="#001233")
 tab2 = Frame(tabControl,width=sw,height=sh,bg="#001233")
-ws.resizable(0,0)
+
+
 tabControl.add(tab1, text ='STAGE 1')
 tabControl.add(tab2, text ='STAGE 2')
 tabControl.grid(column=0,row=0,sticky='nsew')
 
 
-vsb = tk.Scrollbar(tab1, orient="vertical")
-vsb.grid(row=1, column=2, sticky='ns')
-txtarea = tk.Text(tab1,font=("Helvetica",11,"bold"), width=70, height=20, yscrollcommand = vsb.set, bd = 7)
-txtarea.grid(row=1, column=1,sticky="ns")
+
+paned_window1 = tk.PanedWindow(tab1, orient = tk.HORIZONTAL)
+paned_window1.grid(row=3,column=0,sticky=NS)
+paned_window2 = tk.PanedWindow(tab1, orient = tk.HORIZONTAL)
+paned_window2.grid(row=5,column=0,sticky='nsew')
+vsb = tk.Scrollbar(paned_window1, orient="vertical")
+vsb2 = tk.Scrollbar(paned_window1, orient="vertical")
+vsb3 = tk.Scrollbar(paned_window2, orient="vertical")
+txtarea = tk.Text(paned_window1,font=("Helvetica",11,"bold"), width=80, height=20, yscrollcommand = vsb.set, bd = 7)
+txtarea2 = tk.Text(paned_window1,font=("Helvetica",11,"bold"), width=44, height=20, yscrollcommand = vsb2.set, bd = 7)
+txtarea3 = tk.Text(paned_window2,font=("Helvetica",11,"bold"), width=128, height=9, yscrollcommand = vsb3.set, bd = 7)
+
+head = Label(tab1, text="CONSOLE", font=("Helvetica", 14),bg='gray')
+head.grid(row=4,column=0,sticky='nsew')
+head = Label(tab1, text="INPUT AND MEMORY SECTION", font=("Helvetica", 14),bg='gray')
+head.grid(row=2,column=0,sticky='nsew')
+head = Label(tab1, text="REGISTERS", font=("Helvetica", 14),bg='gray')
+head.grid(row=2,column=1,sticky='nsew')
+vsb.config(command = txtarea.yview)
+vsb2.config(command = txtarea2.yview)
+vsb3.config(command = txtarea3.yview)
+
+
+
+
+paned_window1.add(txtarea)
+paned_window1.add(vsb)
+paned_window1.add(txtarea2)
+paned_window1.add(vsb2)
+
+paned_window2.add(txtarea3)
+paned_window2.add(vsb3)
 ctr_mid = Frame(tab1)
-ctr_mid.grid(row=1,column=0,sticky="ns")
+ctr_mid.grid(row=3,column=1,sticky=NS)
 t = Table(ctr_mid)
 #tk.t.grid(row=0,column=1,sticky="ns")
+
+
+
 but = tk.Button(
    tab1,
     text="OPEN FILE",
@@ -84,12 +122,20 @@ but = tk.Button(
 )
 but2 = tk.Button(
    tab1,
-    text="RUN",
-    width=9,
+    text="ONE STEP EXECUTION",
+    width=20,
     height=1,
     bd=2
 )
-vsb.config(command = txtarea.yview)
-but.grid(row=3, column=0,sticky='w',padx=10,pady=10)
-but2.grid(row=3, column=0,sticky='w',padx=100,pady=10)
-ws.mainloop()
+but3 = tk.Button(
+   tab1,
+    text="STEP BY STEP EXECUTION",
+    width=20,
+    height=1,
+    bd=2
+)
+
+but.grid(row=1, column=0,sticky=W,padx=15,pady=10)
+but2.grid(row=1, column=0,sticky=W,padx=120,pady=10)
+but3.grid(row=1, column=0,sticky=W,padx=300,pady=10)
+root.mainloop()
