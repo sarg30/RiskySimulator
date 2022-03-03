@@ -9,26 +9,35 @@ from userinstruct import  takeinput
 registers=[ "zero","ra","sp","gp","tp","t0","t1","t2","s0","s1","a0",
             "a1","a2","a3","a4","a5","a6","a7","s2","s3","s4","s5",
             "s6","s7","s8","s9", "s10","s11", "t3","t4","t5","t6"]
+def convertostring(textsection):
+    ele =""
+    count =0
+    count2=0
+    for i in textsection:
+        count=count+1
+        ele = ele + str(count) +":"+" "
+        for j in i:
+            ele = ele+" "+j
+        ele = ele +"\n"
+    if count==1:
+        count2=len(ele)
+    return ele
 class Table:
      
     def __init__(self,root):
          
         # code for creating table
-        for i in range(16):
+        for i in range(32):
             for j in range(4):
                  
-                self.e = Entry(root, width=10, fg='black',
-                               font=('Helvetica',12,'bold'))
+                self.e = Entry(root, width=31, fg='black',
+                               font=('Helvetica',8,'bold'))
                 if j == 0:
                     self.e.grid(row=i, column=j)
                     self.e.insert(END, registers[i])
                 if j == 1:
                     self.e.grid(row=i, column=j)
-                if j == 2:
-                    self.e.grid(row=i, column=j)
-                    self.e.insert(END, registers[i+16])
-                if j == 3:
-                    self.e.grid(row=i, column=j)
+              
 def openFile():
     tf = filedialog.askopenfilename(
         initialdir="C:/Users/MainFrame/Desktop/",
@@ -36,18 +45,11 @@ def openFile():
         filetypes=(("Text Files", "*.txt"),)
     )
     datasection,textsection,jumpdict = takeinput(tf)
-    ele =""
-    count =0
-    count2=0
-    for i in textsection:
-        count=count+1
-        ele = ele + str(count) +" "
-        for j in i:
-            ele = ele+" "+j
-        ele = ele +"\n"
-        if count==1:
-            count2=len(ele)
+    ele = convertostring(textsection)
     txtarea.insert(END, ele)
+    ele2=convertostring(datasection)
+    txtarea2.insert(END, ele2)
+    
 
 
 root = tk.Tk()
@@ -106,7 +108,7 @@ paned_window1.add(vsb2)
 paned_window2.add(txtarea3)
 paned_window2.add(vsb3)
 ctr_mid = Frame(tab1)
-ctr_mid.grid(row=3,column=1,sticky=NS)
+ctr_mid.grid(row=3,column=1,rowspan=3,sticky=NS)
 t = Table(ctr_mid)
 #tk.t.grid(row=0,column=1,sticky="ns")
 
