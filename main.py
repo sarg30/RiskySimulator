@@ -61,7 +61,7 @@ def la(line):
     global pc
     rd, rs2 = line[1], line[2]
     index = memdict[rs2+":"]
-    RegisterVals[Register_index[rd]]=index
+    RegisterVals[Register_index[rd]]=index*4
     pc=pc+1
 
 def li(line):
@@ -78,7 +78,7 @@ def lw(line):
     offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
-    rs2 = int(offset)//4+RegisterVals[Register_index[base]]
+    rs2 = int(offset)//4+RegisterVals[Register_index[base]]//4
     RegisterVals[Register_index[rd]]=memory[rs2]
     pc = pc+1
 
@@ -91,7 +91,7 @@ def sw(line):
     offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
-    rs2 = int(offset)//4+RegisterVals[Register_index[base]]
+    rs2 = int(offset)//4+RegisterVals[Register_index[base]]//4
     memory[rs2]=RegisterVals[Register_index[rd]]
     pc=pc+1
 
@@ -118,8 +118,10 @@ def bne(line):
 def ble(line):
     global pc
     rs1, rs2, nextaddress = process_B_type(line)
+    #print(RegisterVals[Register_index[rs1]])
+    #print(RegisterVals[Register_index[rs2]])
     print(memory[0:mem])
-    if RegisterVals[Register_index[rs1]] <= RegisterVals[Register_index[rs2]] :
+    if int(RegisterVals[Register_index[rs1]])<= int(RegisterVals[Register_index[rs2]]) :
         pc = jumpdict[nextaddress+":"]
     else:
         pc = pc+1
