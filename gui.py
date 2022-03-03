@@ -61,7 +61,7 @@ root['bg'] = '#001233'
 tabControl = ttk.Notebook(root)
 style = ttk.Style()
 style.theme_create( "MyStyle", parent="alt", settings={
-        "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0] } },
+        "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0] ,"background": "gray"} },
         "TNotebook.Tab": {"configure": {"padding": [5, 5] }}})
 style.theme_use("MyStyle")
 sw = root.winfo_screenwidth()
@@ -86,6 +86,8 @@ vsb3 = tk.Scrollbar(paned_window2, orient="vertical")
 txtarea = tk.Text(paned_window1,font=("Helvetica",11,"bold"), width=80, height=20, yscrollcommand = vsb.set, bd = 7)
 txtarea2 = tk.Text(paned_window1,font=("Helvetica",11,"bold"), width=44, height=20, yscrollcommand = vsb2.set, bd = 7)
 txtarea3 = tk.Text(paned_window2,font=("Helvetica",11,"bold"), width=128, height=9, yscrollcommand = vsb3.set, bd = 7)
+
+
 
 head = Label(tab1, text="CONSOLE", font=("Helvetica", 14),bg='gray')
 head.grid(row=4,column=0,sticky='nsew')

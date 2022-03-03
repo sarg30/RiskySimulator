@@ -3,11 +3,25 @@ from userinstruct import makejumpdict, takeinput
 
 # change it to instructions = userinstruct(file)
 datasection,textsection,jumpdict = takeinput('grouping.txt')
+memdict = {}
+mem=0
 memory = numpy.empty(4096, dtype=object)
 
-# counter for instruction
+
+
 global pc
 pc = 0
+
+def insertdatatomemory(datasection):
+    global mem
+    for i in datasection:
+        if len(i)>2 and i[0].find(":") != -1 and (i[1]==".word" or i[1]==".string"):
+            memdict[i[0]]=mem
+            for j in range(len(i)):
+                if j>1:
+                    memory[mem]=i[j]
+                    mem=mem+1
+    
 
 
 #Functions related to processing different types of instructions and returning required registers, labels and constants
@@ -43,6 +57,18 @@ def process_J_type(line):
 
 
 #Functions related to processing load and save instructions
+def la(line):
+    global pc
+    rd, rs2 = line[1], line[2]
+    index = memdict[rs2+":"]
+    RegisterVals[Register_index[rd]]=index
+    pc=pc+1
+
+def li(line):
+    global pc
+    rd, rs2 = line[1], line[2]
+    RegisterVals[Register_index[rd]]=int(rs2)
+    pc=pc+1
 
 def lw(line):
     global pc
@@ -52,7 +78,7 @@ def lw(line):
     offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
-    rs2 = int(offset)+RegisterVals[Register_index[base]]
+    rs2 = int(offset)//4+RegisterVals[Register_index[base]]
     RegisterVals[Register_index[rd]]=memory[rs2]
     pc = pc+1
 
@@ -65,7 +91,7 @@ def sw(line):
     offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
-    rs2 = int(offset)+RegisterVals[Register_index[base]]
+    rs2 = int(offset)//4+RegisterVals[Register_index[base]]
     memory[rs2]=RegisterVals[Register_index[rd]]
     pc=pc+1
 
@@ -75,9 +101,8 @@ def sw(line):
 def beq(line):
     global pc
     rs1, rs2, nextaddress = process_B_type(line) 
-    if rs1 == rs2:
-        pc = jumpdict[nextaddress]
-        # print(pc)
+    if RegisterVals[Register_index[rs1]] == RegisterVals[Register_index[rs2]]:
+        pc = jumpdict[nextaddress+":"]
     else:
         pc = pc+1
 
@@ -85,12 +110,20 @@ def beq(line):
 def bne(line):
     global pc
     rs1, rs2, nextaddress = process_B_type(line)
-    if rs1 != rs2:
-        pc = jumpdict[nextaddress]
+    if RegisterVals[Register_index[rs1]] != RegisterVals[Register_index[rs2]] :
+        pc = jumpdict[nextaddress+":"]
     else:
         pc = pc+1
 
-
+def ble(line):
+    global pc
+    rs1, rs2, nextaddress = process_B_type(line)
+    print(memory[0:mem])
+    if RegisterVals[Register_index[rs1]] <= RegisterVals[Register_index[rs2]] :
+        pc = jumpdict[nextaddress+":"]
+    else:
+        pc = pc+1
+    
 # Funtions related to processing Instructions related to arithmetic operations
 
 def add(line):
@@ -128,7 +161,7 @@ def addi(line):
         sum = sum+RegisterVals[Register_index[rs2]]
     else:
         sum = sum+int(rs2)
-    print(sum)
+    #print(sum)
     RegisterVals[Register_index[rd]] = sum
     pc = pc+1
 
@@ -149,7 +182,7 @@ def shift_left_logical(line):
 
 def jal(line):
     global pc
-    nextaddress=line[1]
+    nextaddress=line[1]+":"
     pc=jumpdict[nextaddress]
 
 
@@ -223,14 +256,28 @@ def processfunction():
             lw(line)
         elif line[0]=='sw':
             sw(line)
+        elif line[0]=='la':
+            la(line)
+        elif line[0]=='ble':
+            ble(line)
+        elif line[0]=='li':
+            li(line)
+        elif line[0]=='beq':
+           beq(line)
         else:
             pc = pc+1
-
+        s="t2"
+        #print(pc)
+        
 
 # this is the way the register values can be accessed and modified
-# s="t0"
+
 # RegisterVals[Register_index[s]]=2
-# print(RegisterVals[Register_index[s]])
+
+insertdatatomemory(datasection)
+print(jumpdict)
 processfunction()
+#print(jumpdict)
+
 # for i in Register_index:
 #     print(i, RegisterVals[Register_index[i]])
