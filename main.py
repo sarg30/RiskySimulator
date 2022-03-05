@@ -239,7 +239,43 @@ Register_index = {
     "t6": 31,
 }
 
+def print_register_vals():
+    for i in Register_index:
+        print(i, RegisterVals[Register_index[i]])
 
+#to perform single step execution of the code
+def single_step_execution():
+    global pc
+    line = textsection[pc]
+    if line[0] == 'add':
+        add(line)
+    elif line[0] == 'addi':
+        addi(line)
+    elif line[0]=='sub':
+        sub(line)
+    elif line[0]=='jal':
+        jal(line)
+    elif line[0]=='bne':
+        bne(line)
+    elif line[0]=='lw':
+        lw(line)
+    elif line[0]=='sw':
+        sw(line)
+    elif line[0]=='la':
+        la(line)
+    elif line[0]=='ble':
+        ble(line)
+    elif line[0]=='li':
+        li(line)
+    elif line[0]=='beq':
+        beq(line)
+    elif line[0]=='sll':
+        shift_left_logical(line)
+    else:
+        pc = pc+1
+    print_register_vals()
+
+#to execute the whole code at once
 def processfunction():
     global pc
     while pc != len(textsection):
@@ -266,20 +302,31 @@ def processfunction():
             li(line)
         elif line[0]=='beq':
            beq(line)
+        elif line[0]=='sll':
+            shift_left_logical(line)
         else:
             pc = pc+1
         s="t2"
         #print(pc)
+    print_register_vals()
         
 
-# this is the way the register values can be accessed and modified
-
-# RegisterVals[Register_index[s]]=2
-
 insertdatatomemory(datasection)
-print(jumpdict)
-processfunction()
-#print(jumpdict)
 
-# for i in Register_index:
-#     print(i, RegisterVals[Register_index[i]])
+x=1
+while(x!=3 or pc!=len(textsection)):
+    print("What operation do you want to perform\n1 --> Run/Continue\n2 --> Single Step Execution\n3 --> Terminate Program/Exit\nPlease enter the corresponding number")
+    x=int(input())
+    if x==1:
+        processfunction()
+        break
+    elif x==2:
+        single_step_execution()
+    elif x==3:
+        break
+    else:
+        print("Invalid input")
+
+
+
+
