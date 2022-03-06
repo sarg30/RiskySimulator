@@ -370,7 +370,7 @@ def processfunction():
 
 #---------------------------------------------------------------------------------------------------#        
 #GUI SECTION UTILITY FUNCTIONS TO LOAD GUI 
-
+prevVal = RegisterVals.copy()
 def convertostring(textsection):
     ele =""
     count =0
@@ -397,8 +397,8 @@ def memsecloader():
 class Table:
      
     def __init__(self,root):
-         
         # code for creating table
+        global prevVal
         for i in range(32):
             for j in range(2):
                  
@@ -406,11 +406,19 @@ class Table:
                                font=('Helvetica',8,'bold'))
                 if j == 0:
                     self.e.grid(row=i, column=j)
-                    self.e.insert(END, registers[i])
+                    if prevVal[i]!=RegisterVals[i]:
+                        self.e.insert(END, registers[i])
+                        self.e.config(bg="lightblue")
+                    else:
+                        self.e.insert(END, RegisterVals[i])
                 if j == 1:
                     self.e.grid(row=i, column=j)
-                    self.e.insert(END, RegisterVals[i])
-
+                    if prevVal[i]!=RegisterVals[i]:
+                        self.e.insert(END, RegisterVals[i])
+                        self.e.config(bg="lightblue")
+                    else:
+                        self.e.insert(END, RegisterVals[i])
+        prevVal = RegisterVals.copy()
 
 def settingvariables(tf):
     global  datasection,textsection,jumpdict
@@ -440,7 +448,7 @@ root = tk.Tk()
 root.title("Risc-simulator")
 root.geometry("1250x690")
 root['bg'] = '#001233'
-
+root.resizable(True,True)
 
 tabControl = ttk.Notebook(root)
 style = ttk.Style()
