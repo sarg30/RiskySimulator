@@ -22,6 +22,6 @@ A simulator on the lines of QtSpim for RISC-V architecture made in python
     * Reads an assembly or text file and executes the instructions and at the end displays the contents of the registers and the memory
     * The GUI has been implemented using Tkinter
 
-A sample file for testing has been added, named testing.py, which contains assembly code for bubble sort algorithm.
+A sample code for execution has been added, named grouping.txt, which contains assembly code for bubble sort algorithm. To execute this code, run the testing.py file.
 
 
