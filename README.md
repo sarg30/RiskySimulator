@@ -3,7 +3,7 @@
 A simulator on the lines of QtSpim for RISC-V architecture made in python
 
     To run the file with GUI, run the testing.py file
-
+<img src="Screenshot 2022-03-06 125656.png" />
 ## Phase-1
 * Instructions Supported
     * add/sub
