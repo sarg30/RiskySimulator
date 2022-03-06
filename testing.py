@@ -410,7 +410,7 @@ class Table:
                         self.e.insert(END, registers[i])
                         self.e.config(bg="lightblue")
                     else:
-                        self.e.insert(END, RegisterVals[i])
+                        self.e.insert(END, registers[i])
                 if j == 1:
                     self.e.grid(row=i, column=j)
                     if prevVal[i]!=RegisterVals[i]:
@@ -508,6 +508,8 @@ t = Table(ctr_mid)
 def loadi():
     for i in range(32):
         RegisterVals[i]=0
+    global prevVal
+    prevVal = RegisterVals.copy()
     global t
     t=Table(ctr_mid)
 
@@ -520,10 +522,18 @@ def reload():
     t=Table(ctr_mid)
 
 def reload2():
+    global pc
     single_step_execution()
     txtarea2.delete("1.0", "end") 
     ele2=memsecloader()
     txtarea2.insert(END, ele2)
+    txtarea.tag_remove("blue", "1.0", "end")
+    str1 = str(pc) +".0"
+    str2 = str(pc) +".0 lineend" 
+   
+    txtarea.tag_configure("blue", background="lightblue")
+    txtarea.tag_add("blue", str1, str2)
+
     global t
     t=Table(ctr_mid)
 
