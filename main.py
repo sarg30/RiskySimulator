@@ -7,10 +7,20 @@ memdict = {}
 mem=0
 memory = numpy.empty(4096, dtype=object)
 
+last_wb = [0]*32                        #stores the latest cc for the wb stage for each register
 
+df_enabled= [["0"]*1000]*1000           #stores the pipline stages when data forwarding is enabled
+df_disabled = [["0"]*1000]*1000         #stores the pipline stafes when data forwarding is disabled
 
 global pc
 pc = 0
+
+global  cc_df_enabled
+global  cc_df_disabled
+cc_df_enabled=0
+cc_df_disabled=0
+
+is_stall = [0]*1000                     # 1 if the cc is a stall else 0
 
 def insertdatatomemory(datasection):
     global mem
@@ -23,6 +33,14 @@ def insertdatatomemory(datasection):
                     mem=mem+1
     
 
+def dfe_R_type(rd,rs1,rs2,line):
+    """
+    fills the pipeline stages in the array corresponding to 
+    R type instructions when data forwarding is enabled
+    """
+    
+
+
 
 #Functions related to processing different types of instructions and returning required registers, labels and constants
 
@@ -32,6 +50,7 @@ def process_R_type(line):
     the memory addresses of 
     the registers for R-type instructions
     """
+    dfe_R_type(line[1],line[2],line[3],line)
     return line[1], line[2], line[3]
 
 def process_I_type(line):
@@ -314,7 +333,9 @@ def processfunction():
 insertdatatomemory(datasection)
 
 x=1
+
 while(x!=3 or pc!=len(textsection)):
+
     print("What operation do you want to perform\n1 --> Run/Continue\n2 --> Single Step Execution\n3 --> Terminate Program/Exit\nPlease enter the corresponding number")
     x=int(input())
     if x==1:
