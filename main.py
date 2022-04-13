@@ -20,7 +20,7 @@ global  cc_df_disabled
 cc_df_enabled=0
 cc_df_disabled=0
 
-is_stall = [0]*1000                     # 1 if the cc is a stall else 0
+is_stall_dfe = [0]*1000                     # 1 if the cc is a stall else 0
 
 def insertdatatomemory(datasection):
     global mem
@@ -38,7 +38,34 @@ def dfe_R_type(rd,rs1,rs2,line):
     fills the pipeline stages in the array corresponding to 
     R type instructions when data forwarding is enabled
     """
+    global cc_df_enabled
+
+    # searching for which clock cycle implement IF stage
+    i=cc_df_enabled+1
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[i]="IF"
+    cc_df_enabled=i
+    i=i+1
+
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfe[i]==1 or last_wb[RegisterVals[rs1]]>=i or last_wb[RegisterVals[rs2]]>=i:
+        df_enabled[i]="STALL"
+        i=i+1
+    df_enabled[i]="EXE"
+    df_enabled[i+1]="MEM"
+    df_enabled[i+2]="WB"
+
+    #updating the last WB clock cycle for the destination register
+    last_wb[RegisterVals[rd]]=i+2
     
+
 
 
 
