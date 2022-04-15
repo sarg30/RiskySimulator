@@ -1,0 +1,14 @@
+
+# procedure:    bubbleSort
+# Objective:    sort an array of integer elements in nondecreasing order
+# Input:        an address of an array of integers
+# Output:       an array sorted in nondecreasing order
+# Please observe the data segment before and after running the program to observe the sorted array
+
+.data
+array: .word 90,67,30,1,45,50,11,33,67,19,2
+.text
+.globl main
+main:
+add s0,s1,s2
+add s1,s2,s3

@@ -1,8 +1,9 @@
+from traceback import print_tb
 import numpy
 from userinstruct import makejumpdict, takeinput
 
 # change it to instructions = userinstruct(file)
-datasection,textsection,jumpdict = takeinput('grouping.txt')
+datasection,textsection,jumpdict = takeinput('add.txt')
 memdict = {}
 mem=0
 memory = numpy.empty(4096, dtype=object)
@@ -10,11 +11,16 @@ memory = numpy.empty(4096, dtype=object)
 last_wb = [0]*32                        #stores the latest cc for the wb stage for each register(used when data forwarding is disabled)
 last_mem = [0]*32                       #stores the latest cc for the mem stage for each register(used when data forwarding is enabled)
 
-df_enabled= [["0"]*1000]*1000           #stores the pipline stages when data forwarding is enabled
-df_disabled = [["0"]*1000]*1000         #stores the pipline stafes when data forwarding is disabled
+rows,cols = (1000,1000)
+
+df_enabled= [["12" for i in range(cols)] for j in range(rows)]          #stores the pipline stages when data forwarding is enabled
+df_disabled = [["12" for i in range(cols)] for j in range(rows)]         #stores the pipline stafes when data forwarding is disabled
 
 global pc
 pc = 0
+
+global inst_counter
+inst_counter=1
 
 global  cc_df_enabled
 global  cc_df_disabled
@@ -38,37 +44,40 @@ def insertdatatomemory(datasection):
 # functions related to piplining implementation for data forwarding disabled
 
 
-def dfne_R_type(rd,rs1,rs2,line):
+def dfne_R_type(rd,rs1,rs2):
     """
     implements the pipeline stages corresponding to 
     R type instructions when data forwarding is disabled
     """
     global cc_df_disabled
+    global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=cc_df_disabled+1
+    i=int(cc_df_disabled+1)
+    print("asdf")
     while is_stall_dfne[i]==1:
         i=i+1
-    df_disabled[i]="IF"
+    df_disabled[inst_counter][i]="IF"
     cc_df_disabled=i
     i=i+1
 
     # searching for which clock cycle to implement ID/RF stage 
     while is_stall_dfne[i]==1:
         i=i+1
-    df_disabled[i]="ID/RF"
+    df_disabled[inst_counter][i]="ID/RF"
     i=i+1
 
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
-    while is_stall_dfne[i]==1 or last_wb[RegisterVals[rs1]]>=i or last_wb[RegisterVals[rs2]]>=i:
-        df_disabled[i]="STALL"
+    
+    while is_stall_dfne[i]==1 or last_wb[RegisterVals[Register_index[rs1]]]>=i or last_wb[RegisterVals[Register_index[rs2]]]>=i:
+        df_disabled[inst_counter][i]="STALL"
         i=i+1
-    df_disabled[i]="EXE"
-    df_disabled[i+1]="MEM"
-    df_disabled[i+2]="WB"
+    df_disabled[inst_counter][i]="EXE"
+    df_disabled[inst_counter][i+1]="MEM"
+    df_disabled[inst_counter][i+2]="WB"
 
     #updating the last WB clock cycle for the destination register
-    last_wb[RegisterVals[rd]]=i+2
+    last_wb[RegisterVals[Register_index[rd]]]=i+2
     
 
 def dfne_lw(rd,rs2):
@@ -101,7 +110,16 @@ def dfne_lw(rd,rs2):
     df_disabled[i+2]="WB"
 
     #updating the last WB clock cycle for the destination register
-    last_wb[RegisterVals[rd]]=i+2
+    last_wb[RegisterVals[Register_index[rd]]]=i+2
+
+
+
+# def dfne_sw(rd,rs2):
+#     """
+#     implements the pipeline stages corresponding to sw
+#     instruction when data forwarding is disabled
+#     """    
+
 
 
 
@@ -114,7 +132,10 @@ def process_R_type(line):
     the memory addresses of 
     the registers for R-type instructions
     """
-    dfne_R_type(line[1],line[2],line[3],line)
+    global inst_counter
+    print("asdf1")
+    dfne_R_type(line[1],line[2],line[3])
+    inst_counter=inst_counter+1
     return line[1], line[2], line[3]
 
 def process_I_type(line):
@@ -357,7 +378,7 @@ def single_step_execution():
         shift_left_logical(line)
     else:
         pc = pc+1
-    print_register_vals()
+    # print_register_vals()
 
 #to execute the whole code at once
 def processfunction():
@@ -392,7 +413,7 @@ def processfunction():
             pc = pc+1
         s="t2"
         #print(pc)
-    print_register_vals()
+    # print_register_vals()
         
 
 insertdatatomemory(datasection)
@@ -413,6 +434,9 @@ while(x!=3 or pc!=len(textsection)):
     else:
         print("Invalid input")
 
-
+for i in range(0,4):
+    for j in range(0,20):
+        print (df_disabled[i][j],end=" ")
+    print()
 
 
