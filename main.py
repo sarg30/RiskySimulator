@@ -3,7 +3,7 @@ import numpy
 from userinstruct import makejumpdict, takeinput
 
 # change it to instructions = userinstruct(file)
-datasection,textsection,jumpdict = takeinput('grouping.txt')
+datasection,textsection,jumpdict = takeinput('add.txt')
 memdict = {}
 mem=0
 # memory = numpy.empty(4096, dtype=object)
@@ -14,8 +14,8 @@ last_mem = [0 for i in range (32)]                       #stores the latest cc f
 
 rows,cols = (1000,1000)
 
-df_enabled= [[" " for i in range(cols)] for j in range(rows)]          #stores the pipline stages when data forwarding is enabled
-df_disabled = [[" " for i in range(cols)] for j in range(rows)]         #stores the pipline stafes when data forwarding is disabled
+df_enabled= [["     " for i in range(cols)] for j in range(rows)]          #stores the pipline stages when data forwarding is enabled
+df_disabled = [["     " for i in range(cols)] for j in range(rows)]         #stores the pipline stafes when data forwarding is disabled
 
 global pc
 pc = 0
@@ -97,7 +97,7 @@ def dfne_lw(rd,rs2):
     i=int(cc_df_disabled+1)
     while is_stall_dfne[i]==1:
         i=i+1
-    df_disabled[inst_counter][i]="IF"
+    df_disabled[inst_counter][i]="IF   "
     cc_df_disabled=i
     i=i+1
 
@@ -111,9 +111,9 @@ def dfne_lw(rd,rs2):
     while is_stall_dfne[i]==1 or last_wb[Register_index[rs2]]>=i:
         df_disabled[inst_counter][i]="STALL"
         i=i+1
-    df_disabled[inst_counter][i]="EXE"
-    df_disabled[inst_counter][i+1]="MEM"
-    df_disabled[inst_counter][i+2]="WB"
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
 
     #updating the last WB clock cycle for the destination register
     last_wb[Register_index[rd]]=i+2
@@ -132,7 +132,7 @@ def dfne_sw(rd,rs2):
     i=int(cc_df_disabled+1)
     while is_stall_dfne[i]==1:
         i=i+1
-    df_disabled[inst_counter][i]="IF"
+    df_disabled[inst_counter][i]="IF   "
     cc_df_disabled=i
     i=i+1
 
@@ -147,9 +147,9 @@ def dfne_sw(rd,rs2):
         df_disabled[inst_counter][i]="STALL"
         is_stall_dfne[i]=1
         i=i+1
-    df_disabled[inst_counter][i]="EXE"
-    df_disabled[inst_counter][i+1]="MEM"
-    df_disabled[inst_counter][i+2]="WB"
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
 
 
 
@@ -168,7 +168,7 @@ def dfe_R_type(rd,rs1,rs2):
     i= int(cc_df_enabled+1)
     while is_stall_dfe[i]==1:
         i=i+1
-    df_enabled[inst_counter][i]="IF"
+    df_enabled[inst_counter][i]="IF   "
     cc_df_enabled=i
     i=i+1
 
@@ -183,9 +183,9 @@ def dfe_R_type(rd,rs1,rs2):
         df_enabled[inst_counter][i]="STALL"
         is_stall_dfe[i]=1
         i=i+1
-    df_enabled[inst_counter][i]="EXE"
-    df_enabled[inst_counter][i+1]="MEM"
-    df_enabled[inst_counter][i+2]="WB"
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
 
     #updating the last MEM clock cycle for the destination register
     # last_mem[Register_index[rd]]=i+1
@@ -203,7 +203,7 @@ def dfe_lw(rd,rs2):
     i= int(cc_df_enabled+1)
     while is_stall_dfe[i]==1:
         i=i+1
-    df_enabled[inst_counter][i]="IF"
+    df_enabled[inst_counter][i]="IF   "
     cc_df_enabled=i
     i=i+1
 
@@ -218,9 +218,44 @@ def dfe_lw(rd,rs2):
         df_enabled[inst_counter][i]="STALL"
         is_stall_dfe[i]=1
         i=i+1
-    df_enabled[inst_counter][i]="EXE"
-    df_enabled[inst_counter][i+1]="MEM"
-    df_enabled[inst_counter][i+2]="WB"
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
+
+    #updating the last MEM clock cycle for the destination register
+    last_mem[Register_index[rd]]=i+1
+
+
+def dfe_la(rd,rs2):
+    """
+    implements the pipeline stages corresponding to la 
+    instructions when data forwarding is enabled
+    """
+    global cc_df_enabled
+    global inst_counter
+
+    #searching for which clock cycle to impelement IF stage
+    i= int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="IF   "
+    cc_df_enabled=i
+    i=i+1
+
+    #searching for the clock cycle to implement the ID/RF stage
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    #checking for stalls and then impelmenting the EXE,MEM,WB stages
+    while is_stall_dfe[i]==1:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
 
     #updating the last MEM clock cycle for the destination register
     last_mem[Register_index[rd]]=i+1
@@ -238,7 +273,7 @@ def dfe_sw(rd,rs2):
     i= int(cc_df_enabled+1)
     while is_stall_dfe[i]==1:
         i=i+1
-    df_enabled[inst_counter][i]="IF"
+    df_enabled[inst_counter][i]="IF   "
     cc_df_enabled=i
     i=i+1
 
@@ -253,9 +288,9 @@ def dfe_sw(rd,rs2):
         df_enabled[inst_counter][i]="STALL"
         is_stall_dfe[i]=1
         i=i+1
-    df_enabled[inst_counter][i]="EXE"
-    df_enabled[inst_counter][i+1]="MEM"
-    df_enabled[inst_counter][i+2]="WB"
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
 
     #updating the last MEM clock cycle for the destination register
     last_mem[Register_index[rd]]=i+1
@@ -302,6 +337,7 @@ def la(line):
     global pc
     global inst_counter
     rd, rs2 = line[1], line[2]
+    dfe_la(rd,rs2)
     inst_counter=inst_counter+1
     index = memdict[rs2+":"]
     RegisterVals[Register_index[rd]]=index*4
@@ -410,7 +446,8 @@ def sub(line):
     global inst_counter
     rd, rs1, rs2 = process_R_type(line)
     inst_counter=inst_counter+1
-    RegisterVals[Register_index[rd]] = RegisterVals[Register_index[rs1]] -  RegisterVals[Register_index[rs2]]
+    print(RegisterVals[Register_index[rs1]])
+    RegisterVals[Register_index[rd]] = int(RegisterVals[Register_index[rs1]]) -  int(RegisterVals[Register_index[rs2]])
     pc = pc+1
 
 
@@ -592,13 +629,10 @@ while(x!=3 or pc!=len(textsection)):
     else:
         print("Invalid input")
 
-for i in range(0,4):
+for i in range(0,10):
     for j in range(0,20):
         print (df_enabled[i][j],end=" ")
     print()
-
-for i in range (32):
-    print(memory[i])
 
 # for i in range (0,31):
 #     print(last_mem[i],end=" ")

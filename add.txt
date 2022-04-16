@@ -6,10 +6,12 @@
 # Please observe the data segment before and after running the program to observe the sorted array
 
 .data
+n: .word 5
 .text
 .globl main
 main:
 add s2,s0,s3
+la t0,n
 lw s0,0(t0)
 
 sub s3,s0,s1
