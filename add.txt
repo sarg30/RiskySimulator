@@ -10,7 +10,6 @@
 .globl main
 main:
 add s2,s0,s3
-li t0,0
 lw s0,0(t0)
 
 sub s3,s0,s1

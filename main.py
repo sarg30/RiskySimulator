@@ -6,7 +6,8 @@ from userinstruct import makejumpdict, takeinput
 datasection,textsection,jumpdict = takeinput('grouping.txt')
 memdict = {}
 mem=0
-memory = numpy.empty(4096, dtype=object)
+# memory = numpy.empty(4096, dtype=object)
+memory = [0 for i in range (1045)]
 
 last_wb = [0 for i in range (32)]                        #stores the latest cc for the wb stage for each register(used when data forwarding is disabled)
 last_mem = [0 for i in range (32)]                       #stores the latest cc for the mem stage for each register(used when data forwarding is enabled)
@@ -324,8 +325,8 @@ def lw(line):
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
     rs2 = int(offset)//4+RegisterVals[Register_index[base]]//4
-    # dfne_lw(rd,base)
-    # dfe_lw(rd,base)
+    dfne_lw(rd,base)
+    dfe_lw(rd,base)
     inst_counter=inst_counter+1
     RegisterVals[Register_index[rd]]=memory[rs2]
     pc = pc+1
@@ -336,13 +337,13 @@ def sw(line):
     #sw rd, offset_12(base)
     rd,rs2=line[1],line[2]
     global inst_counter
-    dfne_sw(rd,rs2)
-    dfe_sw(rd,rs2)
-    inst_counter=inst_counter+1
     linelist = [x.strip() for x in rs2.split('(')]
     offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
+    dfne_sw(rd,base)
+    dfe_sw(rd,base)
+    inst_counter=inst_counter+1
     rs2 = int(offset)//4+RegisterVals[Register_index[base]]//4
     memory[rs2]=RegisterVals[Register_index[rd]]
     pc=pc+1
@@ -595,6 +596,9 @@ for i in range(0,4):
     for j in range(0,20):
         print (df_enabled[i][j],end=" ")
     print()
+
+for i in range (32):
+    print(memory[i])
 
 # for i in range (0,31):
 #     print(last_mem[i],end=" ")
