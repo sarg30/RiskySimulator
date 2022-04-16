@@ -8,13 +8,13 @@ memdict = {}
 mem=0
 memory = numpy.empty(4096, dtype=object)
 
-last_wb = [0]*32                        #stores the latest cc for the wb stage for each register(used when data forwarding is disabled)
-last_mem = [0]*32                       #stores the latest cc for the mem stage for each register(used when data forwarding is enabled)
+last_wb = [0 for i in range (32)]                        #stores the latest cc for the wb stage for each register(used when data forwarding is disabled)
+last_mem = [0 for i in range (32)]                       #stores the latest cc for the mem stage for each register(used when data forwarding is enabled)
 
 rows,cols = (1000,1000)
 
-df_enabled= [["12" for i in range(cols)] for j in range(rows)]          #stores the pipline stages when data forwarding is enabled
-df_disabled = [["12" for i in range(cols)] for j in range(rows)]         #stores the pipline stafes when data forwarding is disabled
+df_enabled= [[" " for i in range(cols)] for j in range(rows)]          #stores the pipline stages when data forwarding is enabled
+df_disabled = [[" " for i in range(cols)] for j in range(rows)]         #stores the pipline stafes when data forwarding is disabled
 
 global pc
 pc = 0
@@ -54,7 +54,6 @@ def dfne_R_type(rd,rs1,rs2):
 
     # searching for which clock cycle implement IF stage
     i=int(cc_df_disabled+1)
-    print("asdf")
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF"
@@ -68,16 +67,16 @@ def dfne_R_type(rd,rs1,rs2):
     i=i+1
 
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
-    
-    while is_stall_dfne[i]==1 or last_wb[RegisterVals[Register_index[rs1]]]>=i or last_wb[RegisterVals[Register_index[rs2]]]>=i:
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rs1]]>=i or last_wb[Register_index[rs2]]>=i:
         df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
         i=i+1
     df_disabled[inst_counter][i]="EXE"
     df_disabled[inst_counter][i+1]="MEM"
     df_disabled[inst_counter][i+2]="WB"
 
     #updating the last WB clock cycle for the destination register
-    last_wb[RegisterVals[Register_index[rd]]]=i+2
+    last_wb[Register_index[rd]]=i+2
     
 
 def dfne_lw(rd,rs2):
@@ -86,40 +85,65 @@ def dfne_lw(rd,rs2):
     instructions when data forwarding is disabled
     """
     global cc_df_disabled
+    global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=cc_df_disabled+1
+    i=int(cc_df_disabled+1)
     while is_stall_dfne[i]==1:
         i=i+1
-    df_disabled[i]="IF"
+    df_disabled[inst_counter][i]="IF"
     cc_df_disabled=i
     i=i+1
 
     # searching for which clock cycle to implement ID/RF stage 
     while is_stall_dfne[i]==1:
         i=i+1
-    df_disabled[i]="ID/RF"
+    df_disabled[inst_counter][i]="ID/RF"
     i=i+1
 
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
-    while is_stall_dfne[i]==1 or last_wb[RegisterVals[rs2]]>=i:
-        df_disabled[i]="STALL"
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rs2]]>=i:
+        df_disabled[inst_counter][i]="STALL"
         i=i+1
-    df_disabled[i]="EXE"
-    df_disabled[i+1]="MEM"
-    df_disabled[i+2]="WB"
+    df_disabled[inst_counter][i]="EXE"
+    df_disabled[inst_counter][i+1]="MEM"
+    df_disabled[inst_counter][i+2]="WB"
 
     #updating the last WB clock cycle for the destination register
-    last_wb[RegisterVals[Register_index[rd]]]=i+2
+    last_wb[Register_index[rd]]=i+2
 
 
 
-# def dfne_sw(rd,rs2):
-#     """
-#     implements the pipeline stages corresponding to sw
-#     instruction when data forwarding is disabled
-#     """    
+def dfne_sw(rd,rs2):
+    """
+    implements the pipeline stages corresponding to sw
+    instruction when data forwarding is disabled
+    """    
+    global cc_df_disabled
+    global inst_counter
 
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="IF"
+    cc_df_disabled=i
+    i=i+1
+
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rd]]>=i or last_wb[Register_index[rs2]]>=i:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE"
+    df_disabled[inst_counter][i+1]="MEM"
+    df_disabled[inst_counter][i+2]="WB"
 
 
 
@@ -439,4 +463,5 @@ for i in range(0,4):
         print (df_disabled[i][j],end=" ")
     print()
 
-
+for i in range (0,31):
+    print(last_wb[i],end=" ")

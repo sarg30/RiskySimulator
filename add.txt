@@ -6,9 +6,8 @@
 # Please observe the data segment before and after running the program to observe the sorted array
 
 .data
-array: .word 90,67,30,1,45,50,11,33,67,19,2
 .text
 .globl main
 main:
 add s0,s1,s2
-add s1,s2,s3
+add s1,s0,s3
