@@ -158,7 +158,7 @@ def dfne_sw(rd,rs2):
 def dfe_R_type(rd,rs1,rs2):
     """
     implements the pipeline stages corresponding to 
-    R type instructions when data forwarding is disabled
+    R type instructions when data forwarding is enabled
     """
     global cc_df_enabled
     global inst_counter
@@ -186,7 +186,76 @@ def dfe_R_type(rd,rs1,rs2):
     df_enabled[inst_counter][i+2]="WB"
 
     #updating the last MEM clock cycle for the destination register
+    # last_mem[Register_index[rd]]=i+1
+
+
+def dfe_lw(rd,rs2):
+    """
+    implements the pipeline stages corresponding to lw 
+    instructions when data forwarding is enabled
+    """
+    global cc_df_disabled
+    global inst_counter
+
+    #searching for which clock cycle to impelement IF stage
+    i= int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="IF"
+    i=i+1
+
+    #searching for the clock cycle to implement the ID/RF stage
+    while is_stall_dfe[i]:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    #checking for dependencies and stalls and then impelmenting the EXE,MEM,WB stages
+    while is_stall_dfe[i] or last_mem[Register_index[rs2]]>=i:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE"
+    df_enabled[inst_counter][i+1]="MEM"
+    df_enabled[inst_counter][i+2]="WB"
+
+    #updating the last MEM clock cycle for the destination register
     last_mem[Register_index[rd]]=i+1
+
+
+def dfe_sw(rd,rs2):
+    """
+    implements the pipeline stages corresponding to sw 
+    instructions when data forwarding is enabled
+    """
+    global cc_df_disabled
+    global inst_counter
+
+    #searching for which clock cycle to impelement IF stage
+    i= int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="IF"
+    i=i+1
+
+    #searching for the clock cycle to implement the ID/RF stage
+    while is_stall_dfe[i]:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    #checking for dependencies and stalls and then impelmenting the EXE,MEM,WB stages
+    while is_stall_dfe[i] or last_mem[Register_index[rs2]]>=i or last_mem[Register_index[rd]]>=i:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE"
+    df_enabled[inst_counter][i+1]="MEM"
+    df_enabled[inst_counter][i+2]="WB"
+
+    #updating the last MEM clock cycle for the destination register
+    last_mem[Register_index[rd]]=i+1
+
 
 
 
