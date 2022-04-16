@@ -9,5 +9,9 @@
 .text
 .globl main
 main:
-add s0,s1,s2
-add s1,s0,s3
+add s2,s0,s3
+li t0,0
+lw s0,0(t0)
+
+sub s3,s0,s1
+#lw s0,0(t0)

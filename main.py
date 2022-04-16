@@ -3,7 +3,7 @@ import numpy
 from userinstruct import makejumpdict, takeinput
 
 # change it to instructions = userinstruct(file)
-datasection,textsection,jumpdict = takeinput('add.txt')
+datasection,textsection,jumpdict = takeinput('grouping.txt')
 memdict = {}
 mem=0
 memory = numpy.empty(4096, dtype=object)
@@ -27,8 +27,8 @@ global  cc_df_disabled
 cc_df_enabled=0
 cc_df_disabled=0
 
-is_stall_dfe = [0]*1000                     # 1 if the cc is a stall else 0
-is_stall_dfne = [0]*1000                    # 1 if the cc is a stall else 0
+is_stall_dfe = [0 for i in range (1000)]                     # 1 if the cc is a stall else 0
+is_stall_dfne = [0 for i in range (1000)]                    # 1 if the cc is a stall else 0
 
 def insertdatatomemory(datasection):
     global mem
@@ -168,16 +168,17 @@ def dfe_R_type(rd,rs1,rs2):
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF"
+    cc_df_enabled=i
     i=i+1
 
     #searching for the clock cycle to implement the ID/RF stage
-    while is_stall_dfe[i]:
+    while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="ID/RF"
     i=i+1
 
     #checking for dependencies and stalls and then impelmenting the EXE,MEM,WB stages
-    while is_stall_dfe[i] or last_mem[Register_index[rs1]]>=i or last_mem[Register_index[rs2]]>=i:
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rs1]]>=i or last_mem[Register_index[rs2]]>=i:
         df_enabled[inst_counter][i]="STALL"
         is_stall_dfe[i]=1
         i=i+1
@@ -194,7 +195,7 @@ def dfe_lw(rd,rs2):
     implements the pipeline stages corresponding to lw 
     instructions when data forwarding is enabled
     """
-    global cc_df_disabled
+    global cc_df_enabled
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
@@ -202,16 +203,17 @@ def dfe_lw(rd,rs2):
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF"
+    cc_df_enabled=i
     i=i+1
 
     #searching for the clock cycle to implement the ID/RF stage
-    while is_stall_dfe[i]:
+    while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="ID/RF"
     i=i+1
 
     #checking for dependencies and stalls and then impelmenting the EXE,MEM,WB stages
-    while is_stall_dfe[i] or last_mem[Register_index[rs2]]>=i:
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rs2]]>=i:
         df_enabled[inst_counter][i]="STALL"
         is_stall_dfe[i]=1
         i=i+1
@@ -228,7 +230,7 @@ def dfe_sw(rd,rs2):
     implements the pipeline stages corresponding to sw 
     instructions when data forwarding is enabled
     """
-    global cc_df_disabled
+    global cc_df_enabled
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
@@ -236,6 +238,7 @@ def dfe_sw(rd,rs2):
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF"
+    cc_df_enabled=i
     i=i+1
 
     #searching for the clock cycle to implement the ID/RF stage
@@ -267,8 +270,8 @@ def process_R_type(line):
     the memory addresses of 
     the registers for R-type instructions
     """
-    print("asdf1")
     dfne_R_type(line[1],line[2],line[3])
+    dfe_R_type(line[1],line[2],line[3])
     return line[1], line[2], line[3]
 
 def process_I_type(line):
@@ -316,13 +319,14 @@ def lw(line):
     # lw rd, offset_12(base)
     rd, rs2 = line[1], line[2]
     global inst_counter
-    dfne_lw(rd,rs2)
-    inst_counter=inst_counter+1
     linelist = [x.strip() for x in rs2.split('(')]
     offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
     rs2 = int(offset)//4+RegisterVals[Register_index[base]]//4
+    # dfne_lw(rd,base)
+    # dfe_lw(rd,base)
+    inst_counter=inst_counter+1
     RegisterVals[Register_index[rd]]=memory[rs2]
     pc = pc+1
 
@@ -333,6 +337,7 @@ def sw(line):
     rd,rs2=line[1],line[2]
     global inst_counter
     dfne_sw(rd,rs2)
+    dfe_sw(rd,rs2)
     inst_counter=inst_counter+1
     linelist = [x.strip() for x in rs2.split('(')]
     offset = linelist[0]
@@ -387,9 +392,11 @@ def add(line):
     This function processes the
     add instruction of risc-v
     """
+    global inst_counter
     rd, rs1, rs2 = process_R_type(line)
     RegisterVals[Register_index[rd]] = RegisterVals[Register_index[rs1]] + RegisterVals[Register_index[rs2]]
     print( RegisterVals[Register_index[rd]])
+    inst_counter=inst_counter+1
     pc = pc+1
 
 
@@ -399,7 +406,9 @@ def sub(line):
     This function processes the 
     sub instruction of risc-v
     """
+    global inst_counter
     rd, rs1, rs2 = process_R_type(line)
+    inst_counter=inst_counter+1
     RegisterVals[Register_index[rd]] = RegisterVals[Register_index[rs1]] -  RegisterVals[Register_index[rs2]]
     pc = pc+1
 
@@ -584,8 +593,8 @@ while(x!=3 or pc!=len(textsection)):
 
 for i in range(0,4):
     for j in range(0,20):
-        print (df_disabled[i][j],end=" ")
+        print (df_enabled[i][j],end=" ")
     print()
 
-for i in range (0,31):
-    print(last_wb[i],end=" ")
+# for i in range (0,31):
+#     print(last_mem[i],end=" ")

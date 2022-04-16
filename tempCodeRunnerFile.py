@@ -1,2 +1,2 @@
 
-    print(last_wb[i],end=" ")
+    # dfe_lw(rd,base)
