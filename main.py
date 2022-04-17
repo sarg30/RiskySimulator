@@ -30,8 +30,8 @@ global  cc_df_disabled
 cc_df_enabled=0
 cc_df_disabled=0
 
-is_stall_dfe = [0 for i in range (2000)]                     # 1 if the cc is a stall else 0
-is_stall_dfne = [0 for i in range (2000)]                    # 1 if the cc is a stall else 0
+is_stall_dfe = [0 for i in range (cols)]                     # 1 if the cc is a stall else 0
+is_stall_dfne = [0 for i in range (cols)]                    # 1 if the cc is a stall else 0
 
 def insertdatatomemory(datasection):
     global mem
@@ -1111,10 +1111,26 @@ while(x!=3 or pc!=len(textsection)):
 
 
 
-dfe_cycles=0
-dfne_cycles=0
+dfe_cycles=0            # the number of clock cycles taken when data forwarding is enabled
+dfne_cycles=0           # the number of clock cycles taken when data forwarding is disabled
+dfe_stalls=0            # the number of stalls when data forwarding is enabled
+dfne_stalls=0           # the number of stalls when data forwarding is disabled
 
+for i in range(cols):
+    if df_disabled[inst_counter-1][i]!="     ":
+        dfne_cycles=i
+    if df_enabled[inst_counter-1][i]!="     ":
+        dfe_cycles=i
+    if is_stall_dfe[i]==1:
+        dfe_stalls=dfe_stalls+1
+    if(is_stall_dfne[i]==1):
+        dfne_stalls=dfne_stalls+1
 
+# print(dfe_cycles)
+# print(dfne_cycles)
+# print(dfne_stalls)
+# print(dfe_stalls)
+# print(inst_counter)
 
 
 #printing the pipeline for data forwarding disabled
@@ -1129,6 +1145,10 @@ for i in range(inst_counter+1):
             
         print (df_disabled[i][j],end=" ")
     print()
+print("The number of stalls is: ",end=" ")
+print(dfne_stalls)
+print("IPC value is: ",end=" ")
+print((inst_counter-1)/dfne_cycles)
 
 print()
 
@@ -1144,6 +1164,9 @@ for i in range(inst_counter+1):
             
         print (df_enabled[i][j],end=" ")
     print()
-
+print("The number of stalls is: ",end=" ")
+print(dfe_stalls)
+print("IPC value is: ",end=" ")
+print((inst_counter-1)/dfe_cycles)
 # for i in range (0,31):
 #     print(last_mem[i],end=" ")
