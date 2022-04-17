@@ -25,4 +25,11 @@ A simulator on the lines of QtSpim for RISC-V architecture made in python
 
 A sample code for execution has been added, named grouping.txt, which contains assembly code for bubble sort algorithm. To execute this code, run the testing.py file.
 
-
+## Phase-2
+* Extends the simulator made in phase 1 by incorporating pipelining
+* Displays the pipeline for both Data Forwarding Enabled and Date Forwarding Disabled
+* Displays the number of stalls and the IPC for both data forwarding toggles
+* Pipelining has been implemented as follows:
+    * Data Forwarding Enabled:
+        * For all instructions an array will store for each register the last clock cycle when MEM stage of pipeline was done for the corresponding register
+        * This array helps 
