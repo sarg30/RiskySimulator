@@ -1107,9 +1107,17 @@ while(x!=3 or pc!=len(textsection)):
     else:
         print("Invalid input")
 
-for i in range(0,20):
+
+#printing the pipeline for data forwarding disabled
+for i in range(inst_counter+1):
     for j in range(0,20):
-        print (df_enabled[i][j],end=" ")
+        if i==0:
+            cc= str(j)
+            while(len(cc)<5):
+                cc="0"+cc
+            df_disabled[i][j]=cc
+            # continue
+        print (df_disabled[i][j],end=" ")
     print()
 
 # for i in range (0,31):
