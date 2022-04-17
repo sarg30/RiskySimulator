@@ -1,3 +1,4 @@
+from re import T
 from traceback import print_tb
 import numpy
 from userinstruct import makejumpdict, takeinput
@@ -7,12 +8,12 @@ datasection,textsection,jumpdict = takeinput('add.txt')
 memdict = {}
 mem=0
 # memory = numpy.empty(4096, dtype=object)
-memory = [0 for i in range (1045)]
+memory = [0 for i in range (4096)]
 
 last_wb = [0 for i in range (32)]                        #stores the latest cc for the wb stage for each register(used when data forwarding is disabled)
 last_mem = [0 for i in range (32)]                       #stores the latest cc for the mem stage for each register(used when data forwarding is enabled)
 
-rows,cols = (1000,1000)
+rows,cols = (2000,2000)
 
 df_enabled= [["     " for i in range(cols)] for j in range(rows)]          #stores the pipline stages when data forwarding is enabled
 df_disabled = [["     " for i in range(cols)] for j in range(rows)]         #stores the pipline stafes when data forwarding is disabled
@@ -28,8 +29,8 @@ global  cc_df_disabled
 cc_df_enabled=0
 cc_df_disabled=0
 
-is_stall_dfe = [0 for i in range (1000)]                     # 1 if the cc is a stall else 0
-is_stall_dfne = [0 for i in range (1000)]                    # 1 if the cc is a stall else 0
+is_stall_dfe = [0 for i in range (2000)]                     # 1 if the cc is a stall else 0
+is_stall_dfne = [0 for i in range (2000)]                    # 1 if the cc is a stall else 0
 
 def insertdatatomemory(datasection):
     global mem
@@ -62,7 +63,7 @@ def dfne_R_type(rd,rs1,rs2):
     i=int(cc_df_disabled+1)
     while is_stall_dfne[i]==1:
         i=i+1
-    df_disabled[inst_counter][i]="IF"
+    df_disabled[inst_counter][i]="IF   "
     cc_df_disabled=i
     i=i+1
 
@@ -77,13 +78,47 @@ def dfne_R_type(rd,rs1,rs2):
         df_disabled[inst_counter][i]="STALL"
         is_stall_dfne[i]=1
         i=i+1
-    df_disabled[inst_counter][i]="EXE"
-    df_disabled[inst_counter][i+1]="MEM"
-    df_disabled[inst_counter][i+2]="WB"
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
 
     #updating the last WB clock cycle for the destination register
     last_wb[Register_index[rd]]=i+2
-    
+
+
+def dfne_addi(rd,rs1):
+    """
+    implements the pipeline stages corresponding to 
+    R type instructions when data forwarding is disabled
+    """
+    global cc_df_disabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="IF   "
+    cc_df_disabled=i
+    i=i+1
+
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rs1]]>=i:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
+
+    #updating the last WB clock cycle for the destination register
+    last_wb[Register_index[rd]]=i+2
 
 def dfne_lw(rd,rs2):
     """
@@ -110,6 +145,7 @@ def dfne_lw(rd,rs2):
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
     while is_stall_dfne[i]==1 or last_wb[Register_index[rs2]]>=i:
         df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
         i=i+1
     df_disabled[inst_counter][i]="EXE  "
     df_disabled[inst_counter][i+1]="MEM  "
@@ -152,9 +188,178 @@ def dfne_sw(rd,rs2):
     df_disabled[inst_counter][i+2]="WB   "
 
 
+def dfne_beq(rd,rs2,checker):
+    """
+    implements the pipeline stages corresponding to sw
+    instruction when data forwarding is disabled
+    """    
+    global cc_df_disabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    if checker == True:
+        df_disabled[inst_counter][i]="STALL"
+        i=i+1
+    
+    df_disabled[inst_counter][i]="IF   "
+    cc_df_disabled=i
+    i=i+1
+      
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rd]]>=i or last_wb[Register_index[rs2]]>=i:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
+
+
+def dfne_bne(rd,rs2,checker):
+    """
+    implements the pipeline stages corresponding to sw
+    instruction when data forwarding is disabled
+    """    
+    global cc_df_disabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    if checker == True:
+        df_disabled[inst_counter][i]="STALL"
+        i=i+1
+    
+    df_disabled[inst_counter][i]="IF   "
+    cc_df_disabled=i
+    i=i+1
+      
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rd]]>=i or last_wb[Register_index[rs2]]>=i:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
+
+
+def dfne_ble(rd,rs2,checker):
+    """
+    implements the pipeline stages corresponding to sw
+    instruction when data forwarding is disabled
+    """    
+    global cc_df_disabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    if checker == True:
+        df_disabled[inst_counter][i]="STALL"
+        i=i+1
+    
+    df_disabled[inst_counter][i]="IF   "
+    cc_df_disabled=i
+    i=i+1
+      
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rd]]>=i or last_wb[Register_index[rs2]]>=i:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
+
+
+def dfne_li(rd):
+    """
+    implements the pipeline stages corresponding to sw
+    instruction when data forwarding is disabled
+    """    
+    global cc_df_disabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="IF   "
+    cc_df_disabled=i
+    i=i+1
+
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rd]]>=i:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
+
+
+def dfne_jal():
+    """
+    implements the pipeline stages corresponding to sw
+    instruction when data forwarding is disabled
+    """    
+    global cc_df_disabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="IF   "
+    cc_df_disabled=i
+    i=i+1
+
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfne[i]==1:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
 
 #fucntions related to pipelining implementation for data forwarding enabled
-
 
 def dfe_R_type(rd,rs1,rs2):
     """
@@ -192,6 +397,41 @@ def dfe_R_type(rd,rs1,rs2):
 
 
 def dfe_lw(rd,rs2):
+    """
+    implements the pipeline stages corresponding to lw 
+    instructions when data forwarding is enabled
+    """
+    global cc_df_enabled
+    global inst_counter
+
+    #searching for which clock cycle to impelement IF stage
+    i= int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="IF   "
+    cc_df_enabled=i
+    i=i+1
+
+    #searching for the clock cycle to implement the ID/RF stage
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    #checking for dependencies and stalls and then impelmenting the EXE,MEM,WB stages
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rs2]]>=i:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
+
+    #updating the last MEM clock cycle for the destination register
+    last_mem[Register_index[rd]]=i+1
+
+
+def dfe_li(rd,rs2):
     """
     implements the pipeline stages corresponding to lw 
     instructions when data forwarding is enabled
@@ -347,9 +587,11 @@ def li(line):
     global pc
     global inst_counter
     rd, rs2 = line[1], line[2]
+    dfne_li(rd)
     RegisterVals[Register_index[rd]]=int(rs2)
     inst_counter=inst_counter+1
     pc=pc+1
+   
 
 def lw(line):
     global pc
@@ -360,7 +602,7 @@ def lw(line):
     offset = linelist[0]
     linelist = [x.strip() for x in linelist[1].split(')')]
     base = linelist[0]
-    rs2 = int(offset)//4+RegisterVals[Register_index[base]]//4
+    rs2 = int(offset)//4+int(RegisterVals[Register_index[base]])//4
     dfne_lw(rd,base)
     dfe_lw(rd,base)
     inst_counter=inst_counter+1
@@ -380,7 +622,7 @@ def sw(line):
     dfne_sw(rd,base)
     dfe_sw(rd,base)
     inst_counter=inst_counter+1
-    rs2 = int(offset)//4+RegisterVals[Register_index[base]]//4
+    rs2 = int(offset)//4+int(RegisterVals[Register_index[base]])//4
     memory[rs2]=RegisterVals[Register_index[rd]]
     pc=pc+1
 
@@ -391,35 +633,46 @@ def beq(line):
     global pc
     global inst_counter
     rs1, rs2, nextaddress = process_B_type(line) 
-    inst_counter=inst_counter+1
+    predictor = False
     if RegisterVals[Register_index[rs1]] == RegisterVals[Register_index[rs2]]:
+        predictor = True
         pc = jumpdict[nextaddress+":"]
     else:
         pc = pc+1
+    dfne_beq(rs1,rs2,predictor)
+    inst_counter=inst_counter+1
 
 
 def bne(line):
     global pc
     global inst_counter
     rs1, rs2, nextaddress = process_B_type(line)
-    inst_counter=inst_counter+1
+    
+    predictor = False
     if RegisterVals[Register_index[rs1]] != RegisterVals[Register_index[rs2]] :
+        predictor = True
         pc = jumpdict[nextaddress+":"]
     else:
         pc = pc+1
+    dfne_bne(rs1,rs2,predictor)
+    inst_counter=inst_counter+1
+
 
 def ble(line):
     global pc
     global inst_counter
     rs1, rs2, nextaddress = process_B_type(line)
-    inst_counter=inst_counter+1
     #print(RegisterVals[Register_index[rs1]])
     #print(RegisterVals[Register_index[rs2]])
+    predictor = False
     print(memory[0:mem])
-    if int(RegisterVals[Register_index[rs1]])<= int(RegisterVals[Register_index[rs2]]) :
+    if int(RegisterVals[Register_index[rs1]])<= int(RegisterVals[Register_index[rs2]]):
+        predictor = True
         pc = jumpdict[nextaddress+":"]
     else:
         pc = pc+1
+    dfne_ble(rs1,rs2,predictor)
+    inst_counter=inst_counter+1
     
 # Funtions related to processing Instructions related to arithmetic operations
 
@@ -431,7 +684,7 @@ def add(line):
     """
     global inst_counter
     rd, rs1, rs2 = process_R_type(line)
-    RegisterVals[Register_index[rd]] = RegisterVals[Register_index[rs1]] + RegisterVals[Register_index[rs2]]
+    RegisterVals[Register_index[rd]] = int(RegisterVals[Register_index[rs1]]) + (RegisterVals[Register_index[rs2]])
     print( RegisterVals[Register_index[rd]])
     inst_counter=inst_counter+1
     pc = pc+1
@@ -453,6 +706,7 @@ def sub(line):
 
 def addi(line):
     global pc
+    global inst_counter
     sum = 0
     rd, rs1, rs2 = process_I_type(line)
     if is_register(rs1):
@@ -463,6 +717,8 @@ def addi(line):
         sum = sum+RegisterVals[Register_index[rs2]]
     else:
         sum = sum+int(rs2)
+    dfne_addi(rd,rs1)
+    inst_counter=inst_counter+1
     #print(sum)
     RegisterVals[Register_index[rd]] = sum
     pc = pc+1
@@ -484,9 +740,11 @@ def shift_left_logical(line):
 
 def jal(line):
     global pc
+    global inst_counter
     nextaddress=line[1]+":"
     pc=jumpdict[nextaddress]
-
+    dfne_jal()
+    inst_counter=inst_counter+1
 
 # checks whether the input is a register or a constant word
 def is_register(line): 
@@ -629,7 +887,7 @@ while(x!=3 or pc!=len(textsection)):
     else:
         print("Invalid input")
 
-for i in range(0,10):
+for i in range(0,20):
     for j in range(0,20):
         print (df_enabled[i][j],end=" ")
     print()
