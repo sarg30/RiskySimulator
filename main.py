@@ -1,3 +1,4 @@
+from mailbox import linesep
 from re import T
 from traceback import print_tb
 import numpy
@@ -15,7 +16,7 @@ last_mem = [0 for i in range (32)]                       #stores the latest cc f
 
 rows,cols = (2000,2000)
 
-df_enabled= [["     " for i in range(cols)] for j in range(rows)]          #stores the pipline stages when data forwarding is enabled
+df_enabled= [["     " for i in range(cols)] for j in range(rows)]           #stores the pipline stages when data forwarding is enabled
 df_disabled = [["     " for i in range(cols)] for j in range(rows)]         #stores the pipline stafes when data forwarding is disabled
 
 global pc
@@ -901,7 +902,6 @@ def add(line):
     global inst_counter
     rd, rs1, rs2 = process_R_type(line)
     RegisterVals[Register_index[rd]] = int(RegisterVals[Register_index[rs1]]) + (RegisterVals[Register_index[rs2]])
-    print( RegisterVals[Register_index[rd]])
     inst_counter=inst_counter+1
     pc = pc+1
 
@@ -915,7 +915,6 @@ def sub(line):
     global inst_counter
     rd, rs1, rs2 = process_R_type(line)
     inst_counter=inst_counter+1
-    print(RegisterVals[Register_index[rs1]])
     RegisterVals[Register_index[rd]] = int(RegisterVals[Register_index[rs1]]) -  int(RegisterVals[Register_index[rs2]])
     pc = pc+1
 
@@ -1053,11 +1052,14 @@ def single_step_execution():
         pc = pc+1
     # print_register_vals()
 
+
+
 #to execute the whole code at once
 def processfunction():
     global pc
     while pc != len(textsection):
         line = textsection[pc]
+        
         if line[0] == 'add':
             add(line)
         elif line[0] == 'addi':
@@ -1108,16 +1110,39 @@ while(x!=3 or pc!=len(textsection)):
         print("Invalid input")
 
 
+
+dfe_cycles=0
+dfne_cycles=0
+
+
+
+
 #printing the pipeline for data forwarding disabled
+print("The pipeline for data forwarding disabled is as follows: ")
 for i in range(inst_counter+1):
-    for j in range(0,20):
+    for j in range(1,20):
         if i==0:
             cc= str(j)
             while(len(cc)<5):
                 cc="0"+cc
             df_disabled[i][j]=cc
-            # continue
+            
         print (df_disabled[i][j],end=" ")
+    print()
+
+print()
+
+#printing the pipeline for data forwarding enabled
+print("The pipeline for data forwarding enabled is as follows: ")
+for i in range(inst_counter+1):
+    for j in range(1,20):
+        if i==0:
+            cc= str(j)
+            while(len(cc)<5):
+                cc="0"+cc
+            df_enabled[i][j]=cc
+            
+        print (df_enabled[i][j],end=" ")
     print()
 
 # for i in range (0,31):
