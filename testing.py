@@ -460,10 +460,12 @@ swi = root.winfo_screenwidth()
 sh = root.winfo_screenheight()
 tab1 = Frame(tabControl,width=swi,height=sh,bg="#001233")
 tab2 = Frame(tabControl,width=swi,height=sh,bg="#001233")
+tab3 = Frame(tabControl,width=swi,height=sh,bg="#001233")
 
 
-tabControl.add(tab1, text ='STAGE 1')
-tabControl.add(tab2, text ='STAGE 2')
+tabControl.add(tab1, text ='SIMULATOR')
+tabControl.add(tab2, text ='DATA NON-FORWARDING')
+tabControl.add(tab3, text ='DATA FORWARDING')
 tabControl.grid(column=0,row=0,sticky='nsew')
 
 
@@ -472,6 +474,7 @@ paned_window1 = tk.PanedWindow(tab1, orient = tk.HORIZONTAL)
 paned_window1.grid(row=3,column=0,sticky=NS)
 paned_window2 = tk.PanedWindow(tab1, orient = tk.HORIZONTAL)
 paned_window2.grid(row=5,column=0,sticky='nsew')
+
 vsb = tk.Scrollbar(paned_window1, orient="vertical")
 vsb2 = tk.Scrollbar(paned_window1, orient="vertical")
 vsb3 = tk.Scrollbar(paned_window2, orient="vertical")
@@ -479,7 +482,14 @@ txtarea = tk.Text(paned_window1,font=("Helvetica",11,"bold"), width=65, height=1
 txtarea2 = tk.Text(paned_window1,font=("Helvetica",11,"bold"), width=40, height=17, yscrollcommand = vsb2.set, bd = 7)
 txtarea3 = tk.Text(paned_window2,font=("Helvetica",11,"bold"), width=109, height=10, yscrollcommand = vsb3.set, bd = 7)
 
+paned_window3 = tk.PanedWindow(tab2, orient = tk.HORIZONTAL)
+paned_window3.grid(row=3,column=0,sticky=NS)
+paned_window4 = tk.PanedWindow(tab2, orient = tk.VERTICAL)
+paned_window4.grid(row=4,column=0,sticky=EW)
 
+vsb4 = tk.Scrollbar(paned_window3, orient="vertical")
+vsb5 = tk.Scrollbar(paned_window4, orient="horizontal")
+txtarea4 = tk.Text(paned_window3,font=("Helvetica",11,"bold"), width=151, height=34, yscrollcommand = vsb4.set,xscrollcommand=vsb5.set, bd = 7)
 
 head = Label(tab1, text="CONSOLE", font=("Helvetica", 14),bg='gray')
 head.grid(row=4,column=0,sticky='nsew')
@@ -490,7 +500,8 @@ head.grid(row=2,column=1,sticky='nsew')
 vsb.config(command = txtarea.yview)
 vsb2.config(command = txtarea2.yview)
 vsb3.config(command = txtarea3.yview)
-
+vsb4.config(command = txtarea4.yview)
+vsb5.config(command = txtarea4.xview)
 
 
 
@@ -501,6 +512,11 @@ paned_window1.add(vsb2)
 
 paned_window2.add(txtarea3)
 paned_window2.add(vsb3)
+
+paned_window3.add(txtarea4)
+paned_window3.add(vsb4)
+paned_window4.add(vsb5)
+
 ctr_mid = Frame(tab1)
 ctr_mid.grid(row=3,column=1,rowspan=3,sticky=NS)
 t = Table(ctr_mid)
