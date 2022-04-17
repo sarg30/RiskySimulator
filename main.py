@@ -89,7 +89,7 @@ def dfne_R_type(rd,rs1,rs2):
 def dfne_addi(rd,rs1):
     """
     implements the pipeline stages corresponding to 
-    R type instructions when data forwarding is disabled
+    addi instruction when data forwarding is disabled
     """
     global cc_df_disabled
     global inst_counter
@@ -109,7 +109,7 @@ def dfne_addi(rd,rs1):
     i=i+1
 
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
-    while is_stall_dfne[i]==1 or last_wb[Register_index[rs1]]>=i:
+    while is_stall_dfne[i]==1 or last_wb[Register_index[rs1]]>=i or last_wb[Register_index[rd]]>=i:
         df_disabled[inst_counter][i]="STALL"
         is_stall_dfne[i]=1
         i=i+1
@@ -298,7 +298,7 @@ def dfne_ble(rd,rs2,checker):
 
 def dfne_li(rd):
     """
-    implements the pipeline stages corresponding to sw
+    implements the pipeline stages corresponding to li
     instruction when data forwarding is disabled
     """    
     global cc_df_disabled
@@ -326,6 +326,41 @@ def dfne_li(rd):
     df_disabled[inst_counter][i]="EXE  "
     df_disabled[inst_counter][i+1]="MEM  "
     df_disabled[inst_counter][i+2]="WB   "
+
+
+def dfne_la(rd):
+    """
+    implements the pipeline stages corresponding to la 
+    instructions when data forwarding is enabled
+    """
+    global cc_df_disabled
+    global inst_counter
+
+    #searching for which clock cycle to impelement IF stage
+    i= int(cc_df_disabled+1)
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="IF   "
+    cc_df_disabled=i
+    i=i+1
+
+    #searching for the clock cycle to implement the ID/RF stage
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    #checking for stalls and then impelmenting the EXE,MEM,WB stages
+    while is_stall_dfne[i]==1:
+        df_disabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_disabled[inst_counter][i]="EXE  "
+    df_disabled[inst_counter][i+1]="MEM  "
+    df_disabled[inst_counter][i+2]="WB   "
+
+    #updating the last MEM clock cycle for the destination register
+    last_mem[Register_index[rd]]=i+1
 
 
 def dfne_jal():
@@ -359,7 +394,10 @@ def dfne_jal():
     df_disabled[inst_counter][i+1]="MEM  "
     df_disabled[inst_counter][i+2]="WB   "
 
+
+
 #fucntions related to pipelining implementation for data forwarding enabled
+
 
 def dfe_R_type(rd,rs1,rs2):
     """
@@ -394,6 +432,41 @@ def dfe_R_type(rd,rs1,rs2):
 
     #updating the last MEM clock cycle for the destination register
     # last_mem[Register_index[rd]]=i+1
+
+
+def dfe_addi(rd,rs1):
+    """
+    implements the pipeline stages corresponding to 
+    addi instruction when data forwarding is enabled
+    """
+    global cc_df_enabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="IF   "
+    cc_df_enabled=i
+    i=i+1
+
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfne[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rs1]]>=i or last_mem[Register_index[rd]]>=i:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
+
+    #updating the last WB clock cycle for the destination register
+    last_mem[Register_index[rd]]=i+2
 
 
 def dfe_lw(rd,rs2):
@@ -431,7 +504,7 @@ def dfe_lw(rd,rs2):
     last_mem[Register_index[rd]]=i+1
 
 
-def dfe_li(rd,rs2):
+def dfe_li(rd):
     """
     implements the pipeline stages corresponding to lw 
     instructions when data forwarding is enabled
@@ -454,7 +527,7 @@ def dfe_li(rd,rs2):
     i=i+1
 
     #checking for dependencies and stalls and then impelmenting the EXE,MEM,WB stages
-    while is_stall_dfe[i]==1 or last_mem[Register_index[rs2]]>=i:
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rd]]>=i:
         df_enabled[inst_counter][i]="STALL"
         is_stall_dfe[i]=1
         i=i+1
@@ -466,7 +539,39 @@ def dfe_li(rd,rs2):
     last_mem[Register_index[rd]]=i+1
 
 
-def dfe_la(rd,rs2):
+def dfe_jal():
+    """
+    implements the pipeline stages corresponding to jal
+    instruction when data forwarding is enabled
+    """    
+    global cc_df_enabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="IF   "
+    cc_df_enabled=i
+    i=i+1
+
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfe[i]==1:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
+
+
+def dfe_la(rd):
     """
     implements the pipeline stages corresponding to la 
     instructions when data forwarding is enabled
@@ -536,6 +641,112 @@ def dfe_sw(rd,rs2):
     last_mem[Register_index[rd]]=i+1
 
 
+def dfe_beq(rd,rs2,checker):
+    """
+    implements the pipeline stages corresponding to beq
+    instruction when data forwarding is enabled
+    """    
+    global cc_df_enabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    if checker == True:
+        df_enabled[inst_counter][i]="STALL"
+        i=i+1
+    
+    df_enabled[inst_counter][i]="IF   "
+    cc_df_enabled=i
+    i=i+1
+      
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_disabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rd]]>=i or last_mem[Register_index[rs2]]>=i:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
+
+
+def dfe_bne(rd,rs2,checker):
+    """
+    implements the pipeline stages corresponding to bne
+    instruction when data forwarding is enabled
+    """    
+    global cc_df_enabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    if checker == True:
+        df_enabled[inst_counter][i]="STALL"
+        i=i+1
+    
+    df_enabled[inst_counter][i]="IF   "
+    cc_df_enabled=i
+    i=i+1
+      
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rd]]>=i or last_mem[Register_index[rs2]]>=i:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfe[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
+
+
+def dfe_ble(rd,rs2,checker):
+    """
+    implements the pipeline stages corresponding to sw
+    instruction when data forwarding is disabled
+    """    
+    global cc_df_enabled
+    global inst_counter
+
+    # searching for which clock cycle implement IF stage
+    i=int(cc_df_enabled+1)
+    while is_stall_dfe[i]==1:
+        i=i+1
+    if checker == True:
+        df_enabled[inst_counter][i]="STALL"
+        i=i+1
+    
+    df_enabled[inst_counter][i]="IF   "
+    cc_df_enabled=i
+    i=i+1
+      
+    # searching for which clock cycle to implement ID/RF stage 
+    while is_stall_dfe[i]==1:
+        i=i+1
+    df_enabled[inst_counter][i]="ID/RF"
+    i=i+1
+
+    # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    while is_stall_dfe[i]==1 or last_mem[Register_index[rd]]>=i or last_mem[Register_index[rs2]]>=i:
+        df_enabled[inst_counter][i]="STALL"
+        is_stall_dfne[i]=1
+        i=i+1
+    df_enabled[inst_counter][i]="EXE  "
+    df_enabled[inst_counter][i+1]="MEM  "
+    df_enabled[inst_counter][i+2]="WB   "
 
 
 #Functions related to processing different types of instructions and returning required registers, labels and constants
@@ -577,7 +788,8 @@ def la(line):
     global pc
     global inst_counter
     rd, rs2 = line[1], line[2]
-    dfe_la(rd,rs2)
+    dfe_la(rd)
+    dfne_la(rd)
     inst_counter=inst_counter+1
     index = memdict[rs2+":"]
     RegisterVals[Register_index[rd]]=index*4
@@ -588,6 +800,7 @@ def li(line):
     global inst_counter
     rd, rs2 = line[1], line[2]
     dfne_li(rd)
+    dfe_li(rd)
     RegisterVals[Register_index[rd]]=int(rs2)
     inst_counter=inst_counter+1
     pc=pc+1
@@ -640,6 +853,7 @@ def beq(line):
     else:
         pc = pc+1
     dfne_beq(rs1,rs2,predictor)
+    dfe_beq(rs1,rs2,predictor)
     inst_counter=inst_counter+1
 
 
@@ -655,6 +869,7 @@ def bne(line):
     else:
         pc = pc+1
     dfne_bne(rs1,rs2,predictor)
+    dfe_bne(rs1,rs2,predictor)
     inst_counter=inst_counter+1
 
 
@@ -672,6 +887,7 @@ def ble(line):
     else:
         pc = pc+1
     dfne_ble(rs1,rs2,predictor)
+    dfe_ble(rs1,rs2,predictor)
     inst_counter=inst_counter+1
     
 # Funtions related to processing Instructions related to arithmetic operations
@@ -718,6 +934,7 @@ def addi(line):
     else:
         sum = sum+int(rs2)
     dfne_addi(rd,rs1)
+    dfe_addi(rd,rs1)
     inst_counter=inst_counter+1
     #print(sum)
     RegisterVals[Register_index[rd]] = sum
@@ -726,11 +943,13 @@ def addi(line):
 
 def shift_left_logical(line):
     global pc
+    global inst_counter
     """
     This function processes the
     sll instruction of risc-v
     """
     rd, rs1, rs2 = process_R_type(line)
+    inst_counter=inst_counter+1
     RegisterVals[Register_index[rd]] = (RegisterVals[Register_index[rs1]]) << (
         RegisterVals[Register_index[rs2]])
     pc = pc+1
@@ -744,6 +963,7 @@ def jal(line):
     nextaddress=line[1]+":"
     pc=jumpdict[nextaddress]
     dfne_jal()
+    dfe_jal()
     inst_counter=inst_counter+1
 
 # checks whether the input is a register or a constant word
