@@ -1126,6 +1126,9 @@ dfe_cycles=0            # the number of clock cycles taken when data forwarding 
 dfne_cycles=0           # the number of clock cycles taken when data forwarding is disabled
 dfe_stalls=0            # the number of stalls when data forwarding is enabled
 dfne_stalls=0           # the number of stalls when data forwarding is disabled
+
+
+
 def dopipeline():
     global dfe_cycles,dfne_cycles,dfe_stalls,dfne_stalls
     for i in range(cols):
@@ -1138,9 +1141,12 @@ def dopipeline():
         if(is_stall_dfne[i]==1):
             dfne_stalls=dfne_stalls+1
 
+
+
 def printnondataforwarding():
+    global dfne_cycles,dfne_stalls
     for i in range(inst_counter+1):
-        for j in range(1,20):
+        for j in range(1,dfne_cycles):
             if i==0:
                 cc= str(j)
                 while(len(cc)<5):
@@ -1148,45 +1154,45 @@ def printnondataforwarding():
                 df_disabled[i][j]=cc
             txtarea4.insert(END,df_disabled[i][j]+"\t")
         txtarea4.insert(END,"\n")
-            
-def printpipeline():
-    global dfe_cycles,dfne_cycles,dfe_stalls,dfne_stalls
-    #printing the pipeline for data forwarding disabled
-    print("The pipeline for data forwarding disabled is as follows: ")
+
+
+def printdataforwarding():
+    global dfe_cycles,dfe_stalls
     for i in range(inst_counter+1):
-        for j in range(1,20):
-            if i==0:
-                cc= str(j)
-                while(len(cc)<5):
-                    cc="0"+cc
-                df_disabled[i][j]=cc
-                
-            print (df_disabled[i][j],end=" ")
-        print()
-    print("The number of stalls is: ",end=" ")
-    print(dfne_stalls)
-    print("IPC value is: ",end=" ")
-    print((inst_counter-1)/dfne_cycles)
-
-    print()
-
-
-    #printing the pipeline for data forwarding enabled
-    print("The pipeline for data forwarding enabled is as follows: ")
-    for i in range(inst_counter+1):
-        for j in range(1,20):
+        for j in range(1,dfe_cycles):
             if i==0:
                 cc= str(j)
                 while(len(cc)<5):
                     cc="0"+cc
                 df_enabled[i][j]=cc
-                
-            print (df_enabled[i][j],end=" ")
-        print()
-    print("The number of stalls is: ",end=" ")
-    print(dfe_stalls)
-    print("IPC value is: ",end=" ")
-    print((inst_counter-1)/dfe_cycles)
+            txtarea5.insert(END,df_enabled[i][j]+"\t")
+        txtarea5.insert(END,"\n")    
+        
+
+
+def printCycles():
+    global dfe_cycles,dfne_cycles,dfe_stalls,dfne_stalls
+    #printing the pipeline for data forwarding disabled
+    txtarea3.insert(END,"The pipeline for data forwarding disabled is as follows: ")
+    txtarea3.insert(END,"\n")
+    txtarea3.insert(END,"The number of stalls is: ")
+    txtarea3.insert(END,dfne_stalls)
+    txtarea3.insert(END,"\n")
+    txtarea3.insert(END,"IPC value is: ")
+    txtarea3.insert(END,(inst_counter-1)/dfne_cycles)
+
+    txtarea3.insert(END,"\n")
+    txtarea3.insert(END,"\n")
+    txtarea3.insert(END,"\n")
+
+    #printing the pipeline for data forwarding enabled
+    txtarea3.insert(END,"The pipeline for data forwarding enabled is as follows: ")
+    txtarea3.insert(END,"\n")
+    txtarea3.insert(END,"The number of stalls is: ")
+    txtarea3.insert(END,dfe_stalls)
+    txtarea3.insert(END,"\n")
+    txtarea3.insert(END,"IPC value is: ")
+    txtarea3.insert(END,(inst_counter-1)/dfe_cycles)
 
 #---------------------------------------------------------------------------------------------------#        
 #GUI SECTION UTILITY FUNCTIONS TO LOAD GUI 
@@ -1316,11 +1322,11 @@ paned_window6.grid(row=4,column=0,sticky=EW)
 
 vsb4 = tk.Scrollbar(paned_window3, orient="vertical")
 vsb5 = tk.Scrollbar(paned_window4, orient="horizontal")
-txtarea4 = tk.Text(paned_window3,font=("Helvetica",11,"bold"), width=151, height=34,xscrollcommand=vsb5.set, bd = 7)
+txtarea4 = tk.Text(paned_window3,font=("Helvetica",11,"bold"), width=151, height=34, yscrollcommand = vsb4.set,xscrollcommand=vsb5.set,wrap = "none", bd = 7)
 
 vsb6 = tk.Scrollbar(paned_window5, orient="vertical")
 vsb7 = tk.Scrollbar(paned_window6, orient="horizontal")
-txtarea5 = tk.Text(paned_window5,font=("Helvetica",11,"bold"), width=151, height=34, yscrollcommand = vsb6.set,xscrollcommand=vsb7.set, bd = 7)
+txtarea5 = tk.Text(paned_window5,font=("Helvetica",11,"bold"), width=151, height=34, yscrollcommand = vsb6.set,xscrollcommand=vsb7.set,wrap ="none",bd = 7)
 
 head = Label(tab1, text="CONSOLE", font=("Helvetica", 14),bg='gray')
 head.grid(row=4,column=0,sticky='nsew')
@@ -1370,8 +1376,9 @@ def loadi():
 def reload():
     processfunction()
     dopipeline()
-    #printpipeline()
     printnondataforwarding()
+    printdataforwarding()
+    printCycles()
     txtarea2. delete("1.0", "end") 
     ele2=memsecloader()
     txtarea2.insert(END, ele2)
