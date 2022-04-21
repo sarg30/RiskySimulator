@@ -31,5 +31,10 @@ A sample code for execution has been added, named grouping.txt, which contains a
 * Displays the number of stalls and the IPC for both data forwarding toggles
 * Pipelining has been implemented as follows:
     * Data Forwarding Enabled:
-        * For all instructions an array will store for each register the last clock cycle when MEM stage of pipeline was done for the corresponding register
-        * This array helps 
+        * For all instructions an array will store for each register the last clock cycle when MEM stage of pipeline was done for the corresponding register.
+        * This array helps when there is data dependency while executing the current instruction, we can easily check for data dependencies using this method just by checking for the last clock cycle when the MEM stage was performed for the concerned registers.
+    * Data Forwarding Disabled:
+        * For all instructions an array will store for each register the last clock cycle when WB stage of pipeline was done for the corresponding register.
+        * This array helps when there is data dependency while executing the current instruction, we can easily check for data dependencies using this method just by checking for the last clock cycle when the WB stage was performed for the concerned registers.
+    * Branch Predictor:
+        * The simulator uses a brach predictor which assumes that the branch will not be taken, so when the branch is not taken, no stalls are produced. When the branch is taken then that causes a STALL in one cycle of the pipeline.
