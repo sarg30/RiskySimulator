@@ -2,8 +2,8 @@
 # RiscySimulator
 A simulator on the lines of QtSpim for RISC-V architecture made in python
 
-    To run the file with GUI, run the testing.py file
-<img src="Screenshot 2022-03-06 125656.png" />
+    To run the file with GUI, run the Final.py file
+<img src="p1.png" />
 
 ## Phase-1
 * Instructions Supported
@@ -30,10 +30,19 @@ A sample code for execution has been added, named grouping.txt, which contains a
 * Displays the pipeline for both Data Forwarding Enabled and Date Forwarding Disabled
 * Displays the number of stalls and the IPC for both data forwarding toggles
 * Pipelining has been implemented as follows:
-    * Data Forwarding Enabled:
+
+    * <h3>Data Forwarding Enabled:</h3>
+    
+      <img src="dfe.png" />
+      
         * For all instructions an array will store for each register the last clock cycle when MEM stage of pipeline was done for the corresponding register.
         * This array helps when there is data dependency while executing the current instruction, we can easily check for data dependencies using this method just by checking for the last clock cycle when the MEM stage was performed for the concerned registers.
-    * Data Forwarding Disabled:
+        
+        
+    * <h3>Data Forwarding Disabled:</h3>
+    
+      <img src="dfne.png" />
+      
         * For all instructions an array will store for each register the last clock cycle when WB stage of pipeline was done for the corresponding register.
         * This array helps when there is data dependency while executing the current instruction, we can easily check for data dependencies using this method just by checking for the last clock cycle when the WB stage was performed for the concerned registers.
     * Branch Predictor:
