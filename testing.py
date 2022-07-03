@@ -132,7 +132,7 @@ def dfne_R_type(rd,rs1,rs2):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i= cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF   "
@@ -167,7 +167,7 @@ def dfne_addi(rd,rs1):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i=cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF   "
@@ -201,7 +201,7 @@ def dfne_lw(rd,rs2):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i=cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF   "
@@ -237,7 +237,7 @@ def dfne_sw(rd,rs2):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i=cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF   "
@@ -258,6 +258,8 @@ def dfne_sw(rd,rs2):
     df_disabled[inst_counter][i]="EXE  "
     df_disabled[inst_counter][i+1]="MEM  "
     df_disabled[inst_counter][i+2]="WB   "
+      #updating the last WB clock cycle for the destination register
+    last_wb[Register_index[rd]]=i+2
 
 
 def dfne_beq(rd,rs2,checker):
@@ -269,7 +271,7 @@ def dfne_beq(rd,rs2,checker):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i=cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     if checker == True:
@@ -277,6 +279,7 @@ def dfne_beq(rd,rs2,checker):
         i=i+1
     
     df_disabled[inst_counter][i]="IF   "
+    #print(i)
     cc_df_disabled=i
     i=i+1
       
@@ -284,9 +287,12 @@ def dfne_beq(rd,rs2,checker):
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="ID/RF"
+    #print(i)
     i=i+1
 
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
+    #print(last_wb[Register_index[rs2]]);
+    #print(last_wb[Register_index[rd]]);
     while is_stall_dfne[i]==1 or last_wb[Register_index[rd]]>=i or last_wb[Register_index[rs2]]>=i:
         df_disabled[inst_counter][i]="STALL"
         is_stall_dfne[i]=1
@@ -305,7 +311,7 @@ def dfne_bne(rd,rs2,checker):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i=cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     if checker == True:
@@ -341,7 +347,8 @@ def dfne_ble(rd,rs2,checker):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i= cc_df_disabled+1
+
     while is_stall_dfne[i]==1:
         i=i+1
     if checker == True:
@@ -377,7 +384,7 @@ def dfne_li(rd):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i= cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF   "
@@ -398,6 +405,8 @@ def dfne_li(rd):
     df_disabled[inst_counter][i]="EXE  "
     df_disabled[inst_counter][i+1]="MEM  "
     df_disabled[inst_counter][i+2]="WB   "
+      #updating the last WB clock cycle for the destination register
+    last_wb[Register_index[rd]]=i+2
 
 
 def dfne_la(rd):
@@ -409,7 +418,7 @@ def dfne_la(rd):
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
-    i= int(cc_df_disabled+1)
+    i= cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF   "
@@ -444,7 +453,7 @@ def dfne_jal():
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_disabled+1)
+    i= cc_df_disabled+1
     while is_stall_dfne[i]==1:
         i=i+1
     df_disabled[inst_counter][i]="IF   "
@@ -480,7 +489,7 @@ def dfe_R_type(rd,rs1,rs2):
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
-    i= int(cc_df_enabled+1)
+    i= cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF   "
@@ -515,7 +524,7 @@ def dfe_addi(rd,rs1):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_enabled+1)
+    i= cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF   "
@@ -523,8 +532,9 @@ def dfe_addi(rd,rs1):
     i=i+1
 
     # searching for which clock cycle to implement ID/RF stage 
-    while is_stall_dfne[i]==1:
+    while is_stall_dfe[i]==1:
         i=i+1
+    
     df_enabled[inst_counter][i]="ID/RF"
     i=i+1
 
@@ -550,7 +560,7 @@ def dfe_lw(rd,rs2):
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
-    i= int(cc_df_enabled+1)
+    i = cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF   "
@@ -585,7 +595,7 @@ def dfe_li(rd):
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
-    i= int(cc_df_enabled+1)
+    i= cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF   "
@@ -620,7 +630,7 @@ def dfe_jal():
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_enabled+1)
+    i=cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF   "
@@ -652,7 +662,7 @@ def dfe_la(rd):
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
-    i= int(cc_df_enabled+1)
+    i= cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF   "
@@ -687,7 +697,7 @@ def dfe_sw(rd,rs2):
     global inst_counter
 
     #searching for which clock cycle to impelement IF stage
-    i= int(cc_df_enabled+1)
+    i = cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     df_enabled[inst_counter][i]="IF   "
@@ -704,6 +714,7 @@ def dfe_sw(rd,rs2):
     while is_stall_dfe[i] or last_mem[Register_index[rs2]]>=i or last_mem[Register_index[rd]]>=i:
         df_enabled[inst_counter][i]="STALL"
         is_stall_dfe[i]=1
+        #print(i)
         i=i+1
     df_enabled[inst_counter][i]="EXE  "
     df_enabled[inst_counter][i+1]="MEM  "
@@ -722,7 +733,7 @@ def dfe_beq(rd,rs2,checker):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_enabled+1)
+    i= cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     if checker == True:
@@ -736,7 +747,7 @@ def dfe_beq(rd,rs2,checker):
     # searching for which clock cycle to implement ID/RF stage 
     while is_stall_dfe[i]==1:
         i=i+1
-    df_disabled[inst_counter][i]="ID/RF"
+    df_enabled[inst_counter][i]="ID/RF"
     i=i+1
 
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
@@ -758,7 +769,7 @@ def dfe_bne(rd,rs2,checker):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_enabled+1)
+    i= cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     if checker == True:
@@ -794,7 +805,7 @@ def dfe_ble(rd,rs2,checker):
     global inst_counter
 
     # searching for which clock cycle implement IF stage
-    i=int(cc_df_enabled+1)
+    i= cc_df_enabled+1
     while is_stall_dfe[i]==1:
         i=i+1
     if checker == True:
@@ -814,7 +825,7 @@ def dfe_ble(rd,rs2,checker):
     # checking for dependencies and stalls and then implementing the EXE, MEM and WB stages
     while is_stall_dfe[i]==1 or last_mem[Register_index[rd]]>=i or last_mem[Register_index[rs2]]>=i:
         df_enabled[inst_counter][i]="STALL"
-        is_stall_dfne[i]=1
+        is_stall_dfe[i]=1
         i=i+1
     df_enabled[inst_counter][i]="EXE  "
     df_enabled[inst_counter][i+1]="MEM  "
@@ -952,7 +963,7 @@ def ble(line):
     #print(RegisterVals[Register_index[rs1]])
     #print(RegisterVals[Register_index[rs2]])
     predictor = False
-    print(memory[0:mem])
+    #print(memory[0:mem])
     if int(RegisterVals[Register_index[rs1]])<= int(RegisterVals[Register_index[rs2]]):
         predictor = True
         pc = jumpdict[nextaddress+":"]
@@ -1051,9 +1062,9 @@ for i in range(32):
 
 
 
-def print_register_vals():
-    for i in Register_index:
-        print(i, RegisterVals[Register_index[i]])
+# def print_register_vals():
+#     for i in Register_index:
+#         print(i, RegisterVals[Register_index[i]])
 
 #to perform single step execution of the code
 def single_step_execution():
@@ -1432,5 +1443,5 @@ but3.grid(row=1, column=0,sticky=W,padx=300,pady=10)
 root.mainloop()
 
 
-
+##
 

@@ -1,9 +1,9 @@
 
 # procedure:    bubbleSort
-# Objective:    sort an array of integer elements in nondecreasing order
-# Input:        an address of an array of integers
-# Output:       an array sorted in nondecreasing order
-# Please observe the data segment before and after running the program to observe the sorted array
+# Objective:    sort an arraR of integer elements in nondecreasing order
+# Input:        an address of an arraR of integers
+# Output:       an arraR sorted in nondecreasing order
+# Please observe the data segment before and after running the program to observe the sorted arraR
 
 .data
 .text
@@ -15,3 +15,4 @@ add s1,t2,s2
 add s3,s1,s4
 
 exit:
+

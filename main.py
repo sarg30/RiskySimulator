@@ -5,7 +5,7 @@ import numpy
 from userinstruct import makejumpdict, takeinput
 
 # change it to instructions = userinstruct(file)
-datasection,textsection,jumpdict = takeinput('add.txt')
+datasection,textsection,jumpdict = takeinput('grouping.txt')
 memdict = {}
 mem=0
 # memory = numpy.empty(4096, dtype=object)
@@ -1135,8 +1135,8 @@ for i in range(cols):
 
 #printing the pipeline for data forwarding disabled
 print("The pipeline for data forwarding disabled is as follows: ")
-for i in range(inst_counter+1):
-    for j in range(1,20):
+for i in range(inst_counter+30):
+    for j in range(1,30):
         if i==0:
             cc= str(j)
             while(len(cc)<5):
@@ -1154,7 +1154,7 @@ print()
 
 #printing the pipeline for data forwarding enabled
 print("The pipeline for data forwarding enabled is as follows: ")
-for i in range(inst_counter+1):
+for i in range(inst_counter+30):
     for j in range(1,20):
         if i==0:
             cc= str(j)
